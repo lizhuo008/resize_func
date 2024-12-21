@@ -6,7 +6,7 @@
 
 namespace imgproc
 {
-    void resize_custom(cv::Mat &img, cv::Mat &resized_img, int new_width, int new_height);
+    void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation = cv::INTER_NEAREST);
 }
 
 #endif
