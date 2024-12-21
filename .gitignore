@@ -1,0 +1,12 @@
+build/
+samples/
+
+*.tmp
+*.log
+
+*.o
+*.so
+*.exe
+
+.vscode/
+.idea/
