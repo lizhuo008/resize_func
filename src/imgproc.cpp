@@ -20,18 +20,10 @@ void resizeNNInvoker_custom::operator()(const cv::Range& range) const
         uchar* D = output.data + output.step * y;
         const uchar* S = input.ptr( min( (int)floor(y * ify), inp_size.height - 1) );
 
-        switch (pix_size)
+        switch (pix_size) // switch pix_size for further optimization
         {
             case 1:
-                for (int x = 0; x < out_size.width; x++)
-                {
-                    uchar t0 = S[x_ofs[x]];
-                    uchar t1 = S[x_ofs[x+1]];
-                    D[x] = t0;
-                    D[x+1] = t1;
-                }
-
-                for (int x = 0; x < out_size.width; x++)
+                for (int x = 0; x < out_size.width; x++) // no SIMD optimization
                 {
                     D[x] = S[x_ofs[x]];
                 }
