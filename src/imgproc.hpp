@@ -31,4 +31,6 @@ simple resize function w/o any error checking, hardware acceleration, etc.
 */
 void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation = cv::INTER_NEAREST);
 
+void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify);
+
 #endif

@@ -48,6 +48,52 @@ void resizeNNInvoker_custom::operator()(const cv::Range& range) const
     }
 }
 
+void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
+{
+    int pix_size = input.elemSize();
+    
+    // Loop over every pixel in the output image
+    for (int y = 0; y < out_size.height; y++)
+    {
+        for (int x = 0; x < out_size.width; x++)
+        {
+            // Map the current pixel in the output image to the corresponding coordinates in the input image
+            double src_x = x * ifx;
+            double src_y = y * ify;
+
+            int x1 = static_cast<int>(src_x);  // Floor of src_x
+            int y1 = static_cast<int>(src_y);  // Floor of src_y
+
+            int x2 = min(x1 + 1, inp_size.width - 1);  // Right neighbor
+            int y2 = min(y1 + 1, inp_size.height - 1); // Bottom neighbor
+
+            // Calculate interpolation weights
+            double dx = src_x - x1;
+            double dy = src_y - y1;
+
+            // Get pixel values from the four neighboring pixels
+            const uchar* p1 = input.ptr(y1) + x1 * pix_size;
+            const uchar* p2 = input.ptr(y1) + x2 * pix_size;
+            const uchar* p3 = input.ptr(y2) + x1 * pix_size;
+            const uchar* p4 = input.ptr(y2) + x2 * pix_size;
+
+            // Interpolate horizontally first
+            double r1 = (1 - dx) * p1[0] + dx * p2[0]; // Red channel interpolation (horizontal)
+            double g1 = (1 - dx) * p1[1] + dx * p2[1]; // Green channel interpolation (horizontal)
+            double b1 = (1 - dx) * p1[2] + dx * p2[2]; // Blue channel interpolation (horizontal)
+
+            double r2 = (1 - dx) * p3[0] + dx * p4[0]; // Red channel interpolation (horizontal)
+            double g2 = (1 - dx) * p3[1] + dx * p4[1]; // Green channel interpolation (horizontal)
+            double b2 = (1 - dx) * p3[2] + dx * p4[2]; // Blue channel interpolation (horizontal)
+
+            // Interpolate vertically
+            output.data[y * output.step + x * pix_size] = static_cast<uchar>((1 - dy) * r1 + dy * r2);  // Red channel
+            output.data[y * output.step + x * pix_size + 1] = static_cast<uchar>((1 - dy) * g1 + dy * g2);  // Green channel
+            output.data[y * output.step + x * pix_size + 2] = static_cast<uchar>((1 - dy) * b1 + dy * b2);  // Blue channel
+        }
+    }
+}
+
 void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
 {
     cv::AutoBuffer<int> _x_ofs(out_size.width);
@@ -74,8 +120,12 @@ void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_si
     {
         resizeNN_custom(input, output, input_size, new_size, ifx, ify);
     }
+    else if (interpolation == cv::INTER_LINEAR)
+    {
+        resizeBilinear_custom(input, output, input_size, new_size, ifx, ify);
+    }
     else
     {
-        std::cerr << "interpolation method haven't implemented yet" << std::endl;
+        std::cerr << "Interpolation method not implemented yet" << std::endl;
     }
 }
