@@ -4,14 +4,17 @@
 #include <chrono>
 #include <opencv2/opencv.hpp>
 #include <imgproc.hpp>
+#include <test.hpp>
+#include <utils.hpp>
 
 using namespace std;
 
 void compare_resize_runtime(const cv::Mat& input, const cv::Size& new_size, int interpolation)
 {
     // Create output Mat objects for both methods
-    cv::Mat output_custom(new_size, input.type());
-    cv::Mat output_opencv(new_size, input.type());
+    // cv::Mat output_custom(new_size, input.type());
+    // cv::Mat output_opencv(new_size, input.type());
+    cv::Mat output_custom, output_opencv;
 
     // Measure runtime of custom resize function
     auto start_custom = std::chrono::high_resolution_clock::now();
@@ -31,14 +34,15 @@ void compare_resize_runtime(const cv::Mat& input, const cv::Size& new_size, int 
 int main(void)
 {   
     // custom parameters
-    string inp_path = "../samples/grayscale1.jpg";
+    // string inp_path = "../samples/grayscale1.jpg";
     // string inp_path = "../samples/RGB1.jpg";
     // string out_path = "output.jpg";
-    cv::Size new_size(10, 50);
-    int interpolation = cv::INTER_LINEAR;
+    // cv::Size new_size(10, 50);
+    // int interpolation = cv::INTER_LINEAR;
+    // int interpolation = cv::INTER_NEAREST;
 
-    cv::Mat input = cv::imread(inp_path);
-    compare_resize_runtime(input, new_size, interpolation);
+    // cv::Mat input = cv::imread(inp_path);
+    // compare_resize_runtime(input, new_size, interpolation);
 
     // cv::Mat input = cv::imread(inp_path);
     // assert(!input.empty());
@@ -50,6 +54,9 @@ int main(void)
     // cv::imshow("Resized Image", output);
     // cv::waitKey(0);
     // cv::destroyAllWindows(); // close all windows, is it necessary?
+
+    multi_type_test();
+    cout << "All tests passed" << endl;
 
     return 0;
 }

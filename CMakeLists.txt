@@ -13,6 +13,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 set(SOURCE_FILES
     src/main.cpp
     src/imgproc.cpp
+    src/test.cpp
     src/utils.cpp
 )
 

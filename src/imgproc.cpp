@@ -6,21 +6,23 @@
 
 using namespace std;
 
-resizeNNInvoker_custom::resizeNNInvoker_custom(const cv::Mat& _input, cv::Mat& _output, const cv::Size& _inp_size, const cv::Size& _out_size, int* _x_ofs, double _ify)
+template <typename T>
+resizeNNInvoker_custom<T>::resizeNNInvoker_custom(const cv::Mat& _input, cv::Mat& _output, const cv::Size& _inp_size, const cv::Size& _out_size, int* _x_ofs, double _ify)
 : input(_input), output(_output), inp_size(_inp_size), out_size(_out_size), x_ofs(_x_ofs), ify(_ify)
 {
 
 }
 
-void resizeNNInvoker_custom::operator()(const cv::Range& range) const 
+template <typename T>
+void resizeNNInvoker_custom<T>::operator()(const cv::Range& range) const 
 {
-    int pix_size = input.elemSize();
+    int channels = input.channels();
     for (int y = range.start; y < range.end; y++)
     {
-        uchar* D = output.data + output.step * y;
-        const uchar* S = input.ptr( min( (int)floor(y * ify), inp_size.height - 1) );
+        T* D = output.ptr<T>(y);
+        const T* S = input.ptr<T>( min( (int)floor(y * ify), inp_size.height - 1) );
 
-        switch (pix_size) // switch pix_size for further optimization
+        switch (channels) // switch pix_size for further optimization
         {
             case 1:
                 for (int x = 0; x < out_size.width; x++) // no SIMD optimization
@@ -31,23 +33,49 @@ void resizeNNInvoker_custom::operator()(const cv::Range& range) const
             case 3:
                 for (int x = 0; x < out_size.width; x++, D += 3)
                 {
-                    const uchar* _tS = S + x_ofs[x];
+                    const T* _tS = S + x_ofs[x];
                     D[0] = _tS[0];
                     D[1] = _tS[1];
                     D[2] = _tS[2];
                 }
                 break;
             default:
-                for(int x = 0; x < out_size.width; x++, D += pix_size )
+                for(int x = 0; x < out_size.width; x++, D += channels)
                 {
-                    const uchar* _tS = S + x_ofs[x];
-                    for (int k = 0; k < pix_size; k++)
+                    const T* _tS = S + x_ofs[x];
+                    for (int k = 0; k < channels; k++)
                         D[k] = _tS[k];
                 }         
         }
     }
 }
 
+void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
+{
+    cv::AutoBuffer<int> _x_ofs(out_size.width);
+    int* x_ofs = _x_ofs.data();
+    int channels = input.channels();
+
+    for(int x = 0; x < out_size.width; x++)
+    {
+        int sx = floor(x * ifx);
+        x_ofs[x] = min(sx, inp_size.width - 1) * channels;
+    }
+
+    cv::Range range(0, out_size.height);
+
+    if (input.type() == CV_8UC1 || input.type() == CV_8UC3) {
+        cv::parallel_for_(range, resizeNNInvoker_custom<uchar>(input, output, inp_size, out_size, x_ofs, ify));
+    } else if (input.type() == CV_16UC1 || input.type() == CV_16UC3) {
+        cv::parallel_for_(range, resizeNNInvoker_custom<uint16_t>(input, output, inp_size, out_size, x_ofs, ify));
+    } else if (input.type() == CV_32FC1 || input.type() == CV_32FC3) {
+        cv::parallel_for_(range, resizeNNInvoker_custom<float>(input, output, inp_size, out_size, x_ofs, ify));
+    } else {
+        throw std::runtime_error("Unsupported image type");
+    }
+}
+
+//refactor later
 void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
 {
     int pix_size = input.elemSize();
@@ -94,24 +122,9 @@ void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size
     }
 }
 
-void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
-{
-    cv::AutoBuffer<int> _x_ofs(out_size.width);
-    int* x_ofs = _x_ofs.data();
-    int pix_size = input.elemSize();
-
-    for(int x = 0; x < out_size.width; x++)
-    {
-        int sx = floor(x * ifx);
-        x_ofs[x] = min(sx, inp_size.width - 1)*pix_size;
-    }
-
-    cv::Range range(0, out_size.height);
-    cv::parallel_for_(range, resizeNNInvoker_custom(input, output, inp_size, out_size, x_ofs, ify));
-}
-
 void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation)
-{
+{   
+    output = cv::Mat(new_size, input.type());
     cv::Size input_size = input.size();
     double ifx = (double)input_size.width / new_size.width;
     double ify = (double)input_size.height / new_size.height;
