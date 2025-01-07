@@ -1,8 +1,9 @@
 #include <iostream>
 #include <cmath>
-
+#include <chrono>
 #include <opencv2/opencv.hpp>
 #include <imgproc.hpp>
+#include <immintrin.h>
 
 using namespace std;
 
@@ -22,36 +23,54 @@ void resizeNNInvoker_custom<T>::operator()(const cv::Range& range) const
         T* D = output.ptr<T>(y);
         const T* S = input.ptr<T>( min( (int)floor(y * ify), inp_size.height - 1) );
 
-        switch (channels) // switch pix_size for further optimization
+        for(int x = 0; x < out_size.width; x++, D += channels)
         {
-            case 1:
-                for (int x = 0; x < out_size.width; x++) // no SIMD optimization
-                {
-                    D[x] = S[x_ofs[x]];
-                }
-                break;
-            case 3:
-                for (int x = 0; x < out_size.width; x++, D += 3)
-                {
-                    const T* _tS = S + x_ofs[x];
-                    D[0] = _tS[0];
-                    D[1] = _tS[1];
-                    D[2] = _tS[2];
-                }
-                break;
-            default:
-                for(int x = 0; x < out_size.width; x++, D += channels)
-                {
-                    const T* _tS = S + x_ofs[x];
-                    for (int k = 0; k < channels; k++)
-                        D[k] = _tS[k];
-                }         
-        }
+            const T* _tS = S + x_ofs[x];
+            for (int k = 0; k < channels; k++)
+                D[k] = _tS[k];
+        }         
     }
 }
 
 void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
 {
+#if (defined(USE_AVX2) && !defined(TEST))
+    int* x_ofs = static_cast<int*>(_mm_malloc(((out_size.width + 7) & -8) * sizeof(int), 32));
+    if (x_ofs == nullptr)
+        throw std::runtime_error("Failed to allocate memory for x_ofs");
+
+    for(int x = 0; x < out_size.width; x += 8)
+    {
+        __m256i indices = _mm256_setr_epi32(x, x+1, x+2, x+3, x+4, x+5, x+6, x+7);
+        __m256 scaled = _mm256_mul_ps(_mm256_cvtepi32_ps(indices), _mm256_set1_ps(ifx));
+        __m256i sx = _mm256_cvtps_epi32(scaled);
+
+        __m256i max_width = _mm256_set1_epi32(inp_size.width - 1);
+        sx = _mm256_min_epi32(sx, max_width);
+        
+        _mm256_store_si256((__m256i*)(x_ofs + x), sx);
+    }
+
+    for(int x = (out_size.width - out_size.width % 8); x < out_size.width; x++)
+    {
+        int sx = floor(x * ifx);
+        x_ofs[x] = min(sx, inp_size.width - 1);
+    }
+
+    cv::Range range(0, out_size.height);
+
+    switch (input.type())
+    {
+        case CV_8UC1:
+        case CV_8UC3:
+            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<uint8_t>(input, output, inp_size, out_size, x_ofs, ify));
+            break;
+        default:
+            throw std::runtime_error("Unsupported image type");
+    }
+
+    _mm_free(x_ofs);
+#else
     cv::AutoBuffer<int> _x_ofs(out_size.width);
     int* x_ofs = _x_ofs.data();
     int channels = input.channels();
@@ -64,15 +83,24 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
 
     cv::Range range(0, out_size.height);
 
-    if (input.type() == CV_8UC1 || input.type() == CV_8UC3) {
-        cv::parallel_for_(range, resizeNNInvoker_custom<uchar>(input, output, inp_size, out_size, x_ofs, ify));
-    } else if (input.type() == CV_16UC1 || input.type() == CV_16UC3) {
-        cv::parallel_for_(range, resizeNNInvoker_custom<uint16_t>(input, output, inp_size, out_size, x_ofs, ify));
-    } else if (input.type() == CV_32FC1 || input.type() == CV_32FC3) {
-        cv::parallel_for_(range, resizeNNInvoker_custom<float>(input, output, inp_size, out_size, x_ofs, ify));
-    } else {
-        throw std::runtime_error("Unsupported image type");
+    switch (input.type())
+    {
+        case CV_8UC1:
+        case CV_8UC3:
+            cv::parallel_for_(range, resizeNNInvoker_custom<uchar>(input, output, inp_size, out_size, x_ofs, ify));
+            break;
+        case CV_16UC1:
+        case CV_16UC3:
+            cv::parallel_for_(range, resizeNNInvoker_custom<uint16_t>(input, output, inp_size, out_size, x_ofs, ify));
+            break;
+        case CV_32FC1:
+        case CV_32FC3:
+            cv::parallel_for_(range, resizeNNInvoker_custom<float>(input, output, inp_size, out_size, x_ofs, ify));
+            break;
+        default:
+            throw std::runtime_error("Unsupported image type");
     }
+#endif
 }
 
 //refactor later
@@ -129,16 +157,15 @@ void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_si
     double ifx = (double)input_size.width / new_size.width;
     double ify = (double)input_size.height / new_size.height;
 
-    if (interpolation == cv::INTER_NEAREST)
-    {
-        resizeNN_custom(input, output, input_size, new_size, ifx, ify);
-    }
-    else if (interpolation == cv::INTER_LINEAR)
-    {
-        resizeBilinear_custom(input, output, input_size, new_size, ifx, ify);
-    }
-    else
-    {
-        std::cerr << "Interpolation method not implemented yet" << std::endl;
+    switch (interpolation)
+    {   
+        case cv::INTER_NEAREST:
+            resizeNN_custom(input, output, input_size, new_size, ifx, ify);
+            break;
+        case cv::INTER_LINEAR:
+            resizeBilinear_custom(input, output, input_size, new_size, ifx, ify);
+            break;
+        default:
+            std::cerr << "Interpolation method not implemented yet" << std::endl;
     }
 }
