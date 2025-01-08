@@ -88,7 +88,154 @@ void amp_shr_test()
     cv::destroyAllWindows();
 }
 
-void multithread_test(){
+void multithread_test()
+{
+    int test_times = 100;
+    cv::Size size(1024, 1024);
+
+    cv::Mat testImg_8UC1, testImg_8UC3, testImg_16UC1, testImg_16UC3, testImg_32FC1, testImg_32FC3;
+    cv::Mat testImg_8UC1_resp, testImg_8UC3_resp, testImg_16UC1_resp, testImg_16UC3_resp, testImg_32FC1_resp, testImg_32FC3_resp;
+    cv::Mat testImg_8UC1_resn = cv::Mat::zeros(size, CV_8UC1);
+    cv::Mat testImg_8UC3_resn = cv::Mat::zeros(size, CV_8UC3);
+    cv::Mat testImg_16UC1_resn = cv::Mat::zeros(size, CV_16UC1);
+    cv::Mat testImg_16UC3_resn = cv::Mat::zeros(size, CV_16UC3);
+    cv::Mat testImg_32FC1_resn = cv::Mat::zeros(size, CV_32FC1);
+    cv::Mat testImg_32FC3_resn = cv::Mat::zeros(size, CV_32FC3);
+
+    createTestImage(testImg_8UC1, size, CV_8UC1);
+    createTestImage(testImg_8UC3, size, CV_8UC3);
+    createTestImage(testImg_16UC1, size, CV_16UC1);
+    createTestImage(testImg_16UC3, size, CV_16UC3);
+    createTestImage(testImg_32FC1, size, CV_32FC1);
+    createTestImage(testImg_32FC3, size, CV_32FC3);
+
+    cv::Size new_size(512, 512);
+
+    double naiveTime = 0;
+    double parallelTime = 0;
+    for (size_t i = 0; i < test_times; i++)
+    {   
+        TIME_START;
+        resizeNN_naive<uint8_t>(testImg_8UC1, testImg_8UC1_resn, size, new_size, 2, 2);
+        TIME_END("Naive");
+
+        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resize_custom(testImg_8UC1, testImg_8UC1_resp, new_size, cv::INTER_NEAREST);
+        TIME_END("Parallel");
+
+        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    cout << "Naive Resize Time for 8UC1: " << naiveTime / test_times << " ms\n";
+    cout << "Parallel Resize Time for 8UC1: " << parallelTime / test_times << " ms\n";
+
+    naiveTime = 0;
+    parallelTime = 0;
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resizeNN_naive<uint8_t>(testImg_8UC3, testImg_8UC3_resn, size, new_size, 2, 2);
+        TIME_END("Naive");
+
+        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resize_custom(testImg_8UC3, testImg_8UC3_resp, new_size, cv::INTER_NEAREST);
+        TIME_END("Parallel");
+
+        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    cout << "Naive Resize Time for 8UC3: " << naiveTime / test_times << " ms\n";
+    cout << "Parallel Resize Time for 8UC3: " << parallelTime / test_times << " ms\n";
+
+    naiveTime = 0;
+    parallelTime = 0;
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resizeNN_naive<uint16_t>(testImg_16UC1, testImg_16UC1_resn, size, new_size, 2, 2);
+        TIME_END("Naive");
+
+        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resize_custom(testImg_16UC1, testImg_16UC1_resp, new_size, cv::INTER_NEAREST);
+        TIME_END("Parallel");
+
+        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    cout << "Naive Resize Time for 16UC1: " << naiveTime / test_times << " ms\n";
+    cout << "Parallel Resize Time for 16UC1: " << parallelTime / test_times << " ms\n";
+    
+    naiveTime = 0;
+    parallelTime = 0;
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resizeNN_naive<uint16_t>(testImg_16UC3, testImg_16UC3_resn, size, new_size, 2, 2);
+        TIME_END("Naive");
+
+        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resize_custom(testImg_16UC3, testImg_16UC3_resp, new_size, cv::INTER_NEAREST);
+        TIME_END("Parallel");
+
+        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    cout << "Naive Resize Time for 16UC3: " << naiveTime / test_times << " ms\n";
+    cout << "Parallel Resize Time for 16UC3 " << parallelTime / test_times << " ms\n";
+    
+    naiveTime = 0;
+    parallelTime = 0;
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resizeNN_naive<uint32_t>(testImg_32FC1, testImg_32FC1_resn, size, new_size, 2, 2);
+        TIME_END("Naive");
+
+        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resize_custom(testImg_32FC1, testImg_32FC1_resp, new_size, cv::INTER_NEAREST);
+        TIME_END("Parallel");
+
+        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    cout << "Naive Resize Time for 32FC1: " << naiveTime / test_times << " ms\n";
+    cout << "Parallel Resize Time for 32FC1: " << parallelTime / test_times << " ms\n";
+    
+    naiveTime = 0;
+    parallelTime = 0;
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resizeNN_naive<uint32_t>(testImg_32FC3, testImg_32FC3_resn, size, new_size, 2, 2);
+        TIME_END("Naive");
+
+        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resize_custom(testImg_32FC3, testImg_32FC3_resp, new_size, cv::INTER_NEAREST);
+        TIME_END("Parallel");
+
+        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    cout << "Naive Resize Time for 32FC3: " << naiveTime / test_times << " ms\n";
+    cout << "Parallel Resize Time for 32FC3: " << parallelTime / test_times << " ms\n";
 
 }
 
@@ -118,8 +265,8 @@ void measurePerformance(const cv::Mat& input, const cv::Size& new_size)
         openCVTime += std::chrono::duration<double, std::milli>(end - start).count();
     }
     
-    std::cout << "Custom Resize Time: " << customTime / test_times << " ms\n";
-    std::cout << "OpenCV Resize Time: " << openCVTime / test_times << " ms\n";
+    cout << "Custom Resize Time: " << customTime / test_times << " ms\n";
+    cout << "OpenCV Resize Time: " << openCVTime / test_times << " ms\n";
 }
 
 void standard_comp_test()

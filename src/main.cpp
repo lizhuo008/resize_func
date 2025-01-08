@@ -13,11 +13,12 @@ int main(void)
 {   
 
 #if defined(TEST)
-    basic_test();
+    // basic_test();
     // multi_type_test();
+    // amp_shr_test();
+    multithread_test();
+    // standard_comp_test();
     // simd_test();
-    amp_shr_test();
-    standard_comp_test();
 
     cout << "All tests passed" << endl;
 #else
