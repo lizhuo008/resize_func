@@ -68,6 +68,14 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
         case CV_8UC3:
             cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<uint8_t>(input, output, inp_size, out_size, x_ofs, ify));
             break;
+        case CV_16UC1:
+        case CV_16UC3:
+            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<uint16_t>(input, output, inp_size, out_size, x_ofs, ify));
+            break;
+        case CV_32FC1:
+        case CV_32FC3:
+            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<float>(input, output, inp_size, out_size, x_ofs, ify));
+            break;
         default:
             throw std::runtime_error("Unsupported image type");
     }
