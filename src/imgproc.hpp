@@ -24,7 +24,7 @@ class resizeNNInvoker_custom : public cv::ParallelLoopBody
     double ify;
 };
 
-void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify);
+void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify);
 
 class resizeBilinearInvoker_custom : public cv::ParallelLoopBody
 {
@@ -42,7 +42,37 @@ class resizeBilinearInvoker_custom : public cv::ParallelLoopBody
     double ify;
 };
 
-void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify);
+// template <typename T>
+// void resizeNN_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify);
+
+template <typename T>
+void resizeNN_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify)
+{
+    cv::AutoBuffer<int> _x_ofs(out_size.width);
+    int* x_ofs = _x_ofs.data();
+    int channels = input.channels();
+
+    for(int x = 0; x < out_size.width; x++)
+    {
+        int sx = floor(x * ifx);
+        x_ofs[x] = std::min(sx, inp_size.width - 1) * channels;
+    }
+
+    for(int y = 0; y < out_size.height; y++)
+    {
+        T* D = output.ptr<T>(y);
+        const T* S = input.ptr<T>(std::min((int)(floor(y * ify)), inp_size.height - 1));
+
+        for(int x = 0; x < out_size.width; x++, D += channels)
+        {
+            const T* _tS = S + x_ofs[x];
+            for(int k = 0; k < channels; k++)
+                D[k] = _tS[k];
+        }
+    }
+}
+
+void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify);
 
 /*
 simple resize function w/o any error checking, hardware acceleration, etc.
@@ -67,7 +97,11 @@ namespace simd
         int* x_ofs;
         double ify;
     };
-    void resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify);
+    void resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify);
 }
+
+template class simd::resizeNNInvoker_AVX2<uint8_t>;
+template class simd::resizeNNInvoker_AVX2<uint16_t>;
+template class simd::resizeNNInvoker_AVX2<float>;
 
 #endif

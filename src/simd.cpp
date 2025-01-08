@@ -179,7 +179,7 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
 }
 
 //TEST ONLY
-void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
+void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify)
 {   
     int* x_ofs = static_cast<int*>(_mm_malloc(((out_size.width + 7) & -8) * sizeof(int), 32));
     if (x_ofs == nullptr)

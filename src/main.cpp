@@ -36,7 +36,9 @@ int main(void)
 
     cout << "Output image step: " << output.step << endl;
     
-    resize_custom(input, output, new_size, interpolation);
+    double ifx = (double)input.size().width / new_size.width;
+    double ify = (double)input.size().height / new_size.height;
+    resizeNN_naive<uint8_t>(input, output, input.size(), new_size, ifx, ify);
 
     cv::imwrite(out_path, output);
     cv::imshow("Resized Image", output);

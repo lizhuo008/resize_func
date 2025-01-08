@@ -32,7 +32,7 @@ void resizeNNInvoker_custom<T>::operator()(const cv::Range& range) const
     }
 }
 
-void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
+void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify)
 {
 #if (defined(USE_AVX2) && !defined(TEST))
     int channels = input.channels();
@@ -115,7 +115,7 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
 }
 
 //refactor later
-void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
+void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify)
 {
     int pix_size = input.elemSize();
     
@@ -180,3 +180,4 @@ void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_si
             std::cerr << "Interpolation method not implemented yet" << std::endl;
     }
 }
+
