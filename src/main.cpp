@@ -32,8 +32,8 @@ int main(void)
 
     cv::Mat input = cv::imread(inp_path);
     // CVT_3C21C(input);
-    CVT_8U232F(input);
-    // input.convertTo(input, CV_16U, 256.0);
+    // CVT_8U232F(input);
+    CVT_8U216U(input);
 
     cout << "Input image type: " << input.type() << endl;
     
@@ -41,15 +41,19 @@ int main(void)
 
     cout << "Output image step: " << output.step << endl;
     
-    // double ifx = (double)input.size().width / new_size.width;
-    // double ify = (double)input.size().height / new_size.height;
+    double ifx = (double)input.size().width / new_size.width;
+    double ify = (double)input.size().height / new_size.height;
     // resizeNN_naive<uint16_t>(input, output, input.size(), new_size, ifx, ify);
-    resize_custom(input, output, new_size, cv::INTER_NEAREST);
+    // resizeBilinear_naive<float>(input, output, input.size(), new_size, ifx, ify);
+    // resize_custom(input, output, new_size, cv::INTER_NEAREST);
+    resize_custom(input, output, new_size, cv::INTER_LINEAR);
+    
 
     cout << "Output image type: " << output.type() << endl;
 
     // output.convertTo(output, CV_8U, 1.0/256.0);
-    CVT_32F28U(output);
+    // CVT_32F28U(output);
+    CVT_16U28U(output);
     cv::imwrite(out_path, output);
     cv::imshow("Resized Image", output);
     cv::waitKey(0);

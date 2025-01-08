@@ -114,50 +114,84 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
 #endif
 }
 
-//refactor later
+template <typename T>
+resizeBilinearInvoker_custom<T>::resizeBilinearInvoker_custom(const cv::Mat& _input, cv::Mat& _output, const cv::Size& _inp_size, const cv::Size& _out_size, int* _x1_ofs, int* _x2_ofs, double* _wx2, double _ify)
+: input(_input), output(_output), inp_size(_inp_size), out_size(_out_size), x1_ofs(_x1_ofs), x2_ofs(_x2_ofs), wx2(_wx2), ify(_ify)
+{
+
+}
+
+template <typename T>
+void resizeBilinearInvoker_custom<T>::operator()(const cv::Range& range) const
+{
+    int channels = input.channels();
+    for (int y = range.start; y < range.end; y++)
+    {   
+        double src_y = (y + 0.5) * ify - 0.5;
+        int y1 = static_cast<int>(src_y);
+        int y2 = min(y1 + 1, inp_size.height - 1);
+        int wy2 = src_y - y1;
+
+        T* D = output.ptr<T>(y);
+        const T* S1 = input.ptr<T>(y1);
+        const T* S2 = input.ptr<T>(y2);
+
+        for(int x = 0; x < out_size.width; x++ , D += channels)
+        {   
+            const T* i11 = S1 + x1_ofs[x];
+            const T* i12 = S2 + x1_ofs[x];
+            const T* i21 = S1 + x2_ofs[x];
+            const T* i22 = S2 + x2_ofs[x];
+
+            for(int k = 0; k < channels; k++)
+            {   
+                double iy1 = (1 - wx2[x]) * i11[k] + wx2[x] * i21[k];
+                double iy2 = (1 - wx2[x]) * i12[k] + wx2[x] * i22[k];
+                D[k] = static_cast<T>((1 - wy2) * iy1 + wy2 * iy2);
+            }
+        }
+    }
+}
+
 void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify)
 {
-    int pix_size = input.elemSize();
-    
-    // Loop over every pixel in the output image
-    for (int y = 0; y < out_size.height; y++)
+    cv::AutoBuffer<int> _x1_ofs(out_size.width);
+    int* x1_ofs = _x1_ofs.data();
+    cv::AutoBuffer<int> _x2_ofs(out_size.width);
+    int* x2_ofs = _x2_ofs.data();
+    cv::AutoBuffer<double> _wx2(out_size.width);
+    double* wx2 = _wx2.data();
+
+    int channels = input.channels();
+
+    for(int x = 0; x < out_size.width; x++)
+    {   
+        double src_x = (x + 0.5) * ifx - 0.5;
+        int x1 = static_cast<int>(src_x);   
+        int x2 = min(x1 + 1, inp_size.width - 1); 
+        x1_ofs[x] = x1 * channels;
+        x2_ofs[x] = x2 * channels;
+        wx2[x] = src_x - x1;
+    }
+
+    cv::Range range(0, out_size.height);
+
+    switch (input.type())
     {
-        for (int x = 0; x < out_size.width; x++)
-        {
-            // Map the current pixel in the output image to the corresponding coordinates in the input image
-            double src_x = x * ifx;
-            double src_y = y * ify;
-
-            int x1 = static_cast<int>(src_x);  // Floor of src_x
-            int y1 = static_cast<int>(src_y);  // Floor of src_y
-
-            int x2 = min(x1 + 1, inp_size.width - 1);  // Right neighbor
-            int y2 = min(y1 + 1, inp_size.height - 1); // Bottom neighbor
-
-            // Calculate interpolation weights
-            double dx = src_x - x1;
-            double dy = src_y - y1;
-
-            // Get pixel values from the four neighboring pixels
-            const uchar* p1 = input.ptr(y1) + x1 * pix_size;
-            const uchar* p2 = input.ptr(y1) + x2 * pix_size;
-            const uchar* p3 = input.ptr(y2) + x1 * pix_size;
-            const uchar* p4 = input.ptr(y2) + x2 * pix_size;
-
-            // Interpolate horizontally first
-            double r1 = (1 - dx) * p1[0] + dx * p2[0]; // Red channel interpolation (horizontal)
-            double g1 = (1 - dx) * p1[1] + dx * p2[1]; // Green channel interpolation (horizontal)
-            double b1 = (1 - dx) * p1[2] + dx * p2[2]; // Blue channel interpolation (horizontal)
-
-            double r2 = (1 - dx) * p3[0] + dx * p4[0]; // Red channel interpolation (horizontal)
-            double g2 = (1 - dx) * p3[1] + dx * p4[1]; // Green channel interpolation (horizontal)
-            double b2 = (1 - dx) * p3[2] + dx * p4[2]; // Blue channel interpolation (horizontal)
-
-            // Interpolate vertically
-            output.data[y * output.step + x * pix_size] = static_cast<uchar>((1 - dy) * r1 + dy * r2);  // Red channel
-            output.data[y * output.step + x * pix_size + 1] = static_cast<uchar>((1 - dy) * g1 + dy * g2);  // Green channel
-            output.data[y * output.step + x * pix_size + 2] = static_cast<uchar>((1 - dy) * b1 + dy * b2);  // Blue channel
-        }
+        case CV_8UC1:
+        case CV_8UC3:
+            cv::parallel_for_(range, resizeBilinearInvoker_custom<uchar>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify));
+            break;
+        case CV_16UC1:
+        case CV_16UC3:
+            cv::parallel_for_(range, resizeBilinearInvoker_custom<uint16_t>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify));
+            break;  
+        case CV_32FC1:
+        case CV_32FC3:
+            cv::parallel_for_(range, resizeBilinearInvoker_custom<float>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify));
+            break;
+        default:
+            throw std::runtime_error("Unsupported image type");
     }
 }
 
