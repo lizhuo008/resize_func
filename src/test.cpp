@@ -5,8 +5,35 @@
 #include <test.hpp>
 #include <utils.hpp>
 #include <chrono>
+#include <string>
 
 using namespace std;
+using namespace cv;
+
+void basic_test(){
+    string inp_path = "../samples/RGB1.jpg";
+    string out_path = "output.jpg";
+    cv::Size new_size(1024, 1024);
+    int interpolation = cv::INTER_NEAREST;
+
+    cv::Mat input = cv::imread(inp_path);
+    cv::Mat output = cv::Mat::zeros(new_size, input.type());
+
+    cv::imshow("Original Image", input);
+
+    cout << "Press any key to continue...\n";
+    cv::waitKey(0);
+    cv::destroyAllWindows();
+   
+    resize_custom(input, output, new_size, interpolation);
+
+    cv::imwrite(out_path, output);
+    cv::imshow("Resized Image", output);
+
+    cout << "Press any key to exit basic test...\n";
+    cv::waitKey(0);
+    cv::destroyAllWindows();
+}
 
 void multi_type_test()
 {
@@ -30,6 +57,89 @@ void multi_type_test()
     resize_custom(testImg_32FC1, testImg_32FC1_res, new_size, cv::INTER_NEAREST);
     resize_custom(testImg_32FC3, testImg_32FC3_res, new_size, cv::INTER_NEAREST);
     cout << "Multi-type test passed" << endl;
+}
+
+void amp_shr_test()
+{
+    cv::Mat testImg, testImg_res;
+    cv::Size size(1000, 1000);
+
+    createTestImage(testImg, size, CV_8UC3);
+    cv::imshow("Original Image", testImg);
+
+    cout << "Press any key to continue...\n";
+    cv::waitKey(0);
+    cv::destroyAllWindows();
+
+    int len, wid;
+
+    cout << "Input new lengh(default 1000): ";
+    cin >> len;
+    cout << "Input new width(default 1000): ";
+    cin >> wid;
+
+    cv::Size new_size(len, wid);
+    resize_custom(testImg, testImg_res, new_size, cv::INTER_NEAREST);
+
+    cv::imshow("Resized Image", testImg_res);
+
+    std::cout << "Press any key to exit amplify/shrink test...\n";
+    cv::waitKey(0);
+    cv::destroyAllWindows();
+}
+
+void multithread_test(){
+
+}
+
+void measurePerformance(const cv::Mat& input, const cv::Size& new_size) 
+{
+    double customTime = 0;
+    double openCVTime = 0;
+    int test_times = 100;
+
+    cv::Mat myOutput;
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        resize_custom(input, myOutput, new_size, cv::INTER_NEAREST);
+        TIME_END("Custom");
+
+        customTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+
+    cv::Mat openCVOutput;
+    for (size_t i = 0; i < test_times; i++)
+    {
+        TIME_START;
+        cv::resize(input, openCVOutput, new_size, 0, 0, cv::INTER_NEAREST);
+        TIME_END("OpenCV");
+
+        openCVTime += std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    
+    std::cout << "Custom Resize Time: " << customTime / test_times << " ms\n";
+    std::cout << "OpenCV Resize Time: " << openCVTime / test_times << " ms\n";
+}
+
+void standard_comp_test()
+{
+    cv::Mat smallImg, midImg, largeImg;
+    cv::Mat smallRes, midRes, largeRes;
+
+    cv::Size S(256, 256);
+    cv::Size M(1024, 1024);
+    cv::Size L(2048, 2048);
+
+    createTestImage(smallImg, S, CV_8UC1);
+    createTestImage(midImg, M, CV_8UC1);
+    createTestImage(largeImg, L, CV_8UC3);
+
+    cv::Size new_size(512,512);
+    measurePerformance(smallImg, new_size);
+    measurePerformance(midImg, new_size);
+    measurePerformance(largeImg, new_size);
+
 }
 
 void simd_test()

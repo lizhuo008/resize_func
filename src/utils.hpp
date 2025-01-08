@@ -7,7 +7,7 @@
 #define TIME_END(NAME) \
     auto end = std::chrono::high_resolution_clock::now(); \
     auto duration = std::chrono::duration<double, std::milli>(end - start).count(); \
-    std::cout << NAME << " time: " << duration << "ms" << std::endl;
+    // std::cout << NAME << " time: " << duration << "ms" << std::endl;
 
 void createTestImage(cv::Mat& img, const cv::Size& size, int type = CV_8UC3, int seed = 0);
 
