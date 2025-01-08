@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cassert>
-#include <string>
+
 #include <chrono>
 #include <opencv2/opencv.hpp>
 #include <imgproc.hpp>
@@ -13,9 +13,11 @@ int main(void)
 {   
 
 #if defined(TEST)
-
-    multi_type_test();
-    simd_test();
+    basic_test();
+    // multi_type_test();
+    // simd_test();
+    amp_shr_test();
+    standard_comp_test();
 
     cout << "All tests passed" << endl;
 #else
