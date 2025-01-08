@@ -33,15 +33,16 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
                 0x0, 0x4, 0x8, 0xC, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                 0x0, 0x4, 0x8, 0xC, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
                 const __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x4, -1, -1, -1, -1, -1, -1);\
+                const int safe_width = (width - width % 8) - 24;
 
-                for (int x = 0; x < (width - width % 8); x += 8)
+                for (int x = 0; x < safe_width; x += 8)
                 {
                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
                     __m256i src = _mm256_i32gather_epi32((int*)S, idx, 1);
                     __m256i src_perm = _mm256_permutevar8x32_epi32(_mm256_shuffle_epi8(src, SHUFFLE_MASK), PERMUTE_MASK);
                     _mm256_storeu_si256((__m256i*)(D + x * channels), src_perm);
                 } 
-                for (int x = (width - width % 8); x < width; x++)
+                for (int x = safe_width; x < width; x++)
                 {
                     D[x] = S[x_ofs[x]];
                 }
@@ -57,19 +58,22 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
                 const __m256i SHUFFLE_MASK = _mm256_setr_epi8(
                 0x0, 0x1, 0x2, 0x4, 0x5, 0x6, 0x8, 0x9, 0xA, 0xC, 0xD, 0xE, -1, -1, -1, -1,
                 0x0, 0x1, 0x2, 0x4, 0x5, 0x6, 0x8, 0x9, 0xA, 0xC, 0xD, 0xE, -1, -1, -1, -1);
-                const __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x2, 0x4, 0x5, 0x6, -1, -1);   
-                for (int x = 0; x < (width - width % 8); x += 8)
+                const __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x2, 0x4, 0x5, 0x6, -1, -1); 
+                const int safe_width = (width - width % 8) - 8;
+
+                for (int x = 0; x < safe_width; x += 8)
                 {
                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
                     __m256i src = _mm256_i32gather_epi32((int*)S, idx, 1);
                     __m256i src_perm = _mm256_permutevar8x32_epi32(_mm256_shuffle_epi8(src, SHUFFLE_MASK), PERMUTE_MASK);
                     _mm256_storeu_si256((__m256i*)(D + x * channels), src_perm);
                 } 
-                for (int x = (width - width % 8); x < width; x++, D += channels)
-                {
-                    const T* _tS = S + x_ofs[x]*channels;
+                T* _tD = D + safe_width * channels;
+                for (int x = safe_width; x < width; x++, _tD += channels)
+                {   
+                    const T* _tS = S + x_ofs[x];
                     for (int k = 0; k < channels; k++)
-                        D[k] = _tS[k];
+                        _tD[k] = _tS[k];
                 }
             }
             break;
@@ -81,11 +85,11 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
 
 //TEST ONLY
 void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
-{
+{   
     int* x_ofs = static_cast<int*>(_mm_malloc(((out_size.width + 7) & -8) * sizeof(int), 32));
     if (x_ofs == nullptr)
         throw std::runtime_error("Failed to allocate memory for x_ofs");
-
+    int channels = input.channels();
     for(int x = 0; x < out_size.width; x += 8)
     {
         __m256i indices = _mm256_setr_epi32(x, x+1, x+2, x+3, x+4, x+5, x+6, x+7);
@@ -95,6 +99,8 @@ void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& 
         __m256i max_width = _mm256_set1_epi32(inp_size.width - 1);
         sx = _mm256_min_epi32(sx, max_width);
 
+        sx = _mm256_mullo_epi32(sx, _mm256_set1_epi32(channels));
+        
         _mm256_store_si256((__m256i*)(x_ofs + x), sx);
     }
     for(int x = (out_size.width - out_size.width % 8); x < out_size.width; x++)

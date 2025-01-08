@@ -35,6 +35,7 @@ void resizeNNInvoker_custom<T>::operator()(const cv::Range& range) const
 void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size out_size, double ifx, double ify)
 {
 #if (defined(USE_AVX2) && !defined(TEST))
+    int channels = input.channels();
     int* x_ofs = static_cast<int*>(_mm_malloc(((out_size.width + 7) & -8) * sizeof(int), 32));
     if (x_ofs == nullptr)
         throw std::runtime_error("Failed to allocate memory for x_ofs");
@@ -47,6 +48,8 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
 
         __m256i max_width = _mm256_set1_epi32(inp_size.width - 1);
         sx = _mm256_min_epi32(sx, max_width);
+
+        sx = _mm256_mullo_epi32(sx, _mm256_set1_epi32(channels));
         
         _mm256_store_si256((__m256i*)(x_ofs + x), sx);
     }

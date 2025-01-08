@@ -21,28 +21,27 @@ int main(void)
 #else
     // custom parameters
     // string inp_path = "../samples/grayscale1.jpg";
-    // // string inp_path = "../samples/RGB1.jpg";
-    // string out_path = "output.jpg";
-    // cv::Size new_size(1024, 1024);
-    // // int interpolation = cv::INTER_LINEAR;
-    // int interpolation = cv::INTER_NEAREST;
+    string inp_path = "../samples/RGB1.jpg";
+    string out_path = "output.jpg";
+    cv::Size new_size(1024, 1024);
+    // int interpolation = cv::INTER_LINEAR;
+    int interpolation = cv::INTER_NEAREST;
 
-    // cv::Mat input = cv::imread(inp_path);
+    cv::Mat input = cv::imread(inp_path);
     // cv::cvtColor(input, input, cv::COLOR_BGR2GRAY);
-    // cout << "Input image type: " << input.type() << endl;
-    // // compare_resize_runtime(input, new_size, interpolation);
-
-    // // cv::Mat input = cv::imread(inp_path);
-    // // assert(!input.empty());
-    // cv::Mat output = cv::Mat::zeros(new_size, input.type());
+    // input.convertTo(input, CV_32F);
+    cout << "Input image type: " << input.type() << endl;
     
-    // resize_custom(input, output, new_size, interpolation);
-    // compare_resize_runtime(input, new_size, interpolation);
+    cv::Mat output = cv::Mat::zeros(new_size, input.type());
 
-    // cv::imwrite(out_path, output);
-    // cv::imshow("Resized Image", output);
-    // cv::waitKey(0);
-    // cv::destroyAllWindows(); // close all windows, is it necessary?
+    cout << "Output image step: " << output.step << endl;
+    
+    resize_custom(input, output, new_size, interpolation);
+
+    cv::imwrite(out_path, output);
+    cv::imshow("Resized Image", output);
+    cv::waitKey(0);
+    cv::destroyAllWindows(); // close all windows, is it necessary?
     cout << "Test mode is not enabled" << endl;
 #endif
 
