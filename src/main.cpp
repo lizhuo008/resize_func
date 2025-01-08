@@ -31,18 +31,25 @@ int main(void)
     int interpolation = cv::INTER_NEAREST;
 
     cv::Mat input = cv::imread(inp_path);
-    // cv::cvtColor(input, input, cv::COLOR_BGR2GRAY);
-    // input.convertTo(input, CV_32F);
+    // CVT_3C21C(input);
+    CVT_8U232F(input);
+    // input.convertTo(input, CV_16U, 256.0);
+
     cout << "Input image type: " << input.type() << endl;
     
     cv::Mat output = cv::Mat::zeros(new_size, input.type());
 
     cout << "Output image step: " << output.step << endl;
     
-    double ifx = (double)input.size().width / new_size.width;
-    double ify = (double)input.size().height / new_size.height;
-    resizeNN_naive<uint8_t>(input, output, input.size(), new_size, ifx, ify);
+    // double ifx = (double)input.size().width / new_size.width;
+    // double ify = (double)input.size().height / new_size.height;
+    // resizeNN_naive<uint16_t>(input, output, input.size(), new_size, ifx, ify);
+    resize_custom(input, output, new_size, cv::INTER_NEAREST);
 
+    cout << "Output image type: " << output.type() << endl;
+
+    // output.convertTo(output, CV_8U, 1.0/256.0);
+    CVT_32F28U(output);
     cv::imwrite(out_path, output);
     cv::imshow("Resized Image", output);
     cv::waitKey(0);

@@ -13,76 +13,6 @@ simd::resizeNNInvoker_AVX2<T>::resizeNNInvoker_AVX2(const cv::Mat& _input, cv::M
 
 }
 
-// template <typename T>
-// void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const 
-// {   
-//     const int avx_width = 32;
-    
-//     int width = out_size.width;
-//     int channels = input.channels();
-
-//     switch (channels)
-//     {
-//         case 1:
-//         {   
-//             for (int y = range.start; y < range.end; y++)
-//             {
-//                 T* D = output.ptr<T>(y);
-//                 const T* S = input.ptr<T>( min( (int)floor(y * ify), inp_size.height - 1) );
-//                 const __m256i SHUFFLE_MASK = _mm256_setr_epi8(
-//                 0x0, 0x4, 0x8, 0xC, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-//                 0x0, 0x4, 0x8, 0xC, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
-//                 const __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x4, -1, -1, -1, -1, -1, -1);\
-//                 const int safe_width = (width - width % 8) - 24;
-
-//                 for (int x = 0; x < safe_width; x += 8)
-//                 {
-//                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
-//                     __m256i src = _mm256_i32gather_epi32((int*)S, idx, 1);
-//                     __m256i src_perm = _mm256_permutevar8x32_epi32(_mm256_shuffle_epi8(src, SHUFFLE_MASK), PERMUTE_MASK);
-//                     _mm256_storeu_si256((__m256i*)(D + x * channels), src_perm);
-//                 } 
-//                 for (int x = safe_width; x < width; x++)
-//                 {
-//                     D[x] = S[x_ofs[x]];
-//                 }
-//             }
-//             break;
-//         }
-//         case 3:
-//         {
-//             for (int y = range.start; y < range.end; y++)
-//             { 
-//                 T* D = output.ptr<T>(y);
-//                 const T* S = input.ptr<T>( min( (int)floor(y * ify), inp_size.height - 1) );
-//                 const __m256i SHUFFLE_MASK = _mm256_setr_epi8(
-//                 0x0, 0x1, 0x2, 0x4, 0x5, 0x6, 0x8, 0x9, 0xA, 0xC, 0xD, 0xE, -1, -1, -1, -1,
-//                 0x0, 0x1, 0x2, 0x4, 0x5, 0x6, 0x8, 0x9, 0xA, 0xC, 0xD, 0xE, -1, -1, -1, -1);
-//                 const __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x2, 0x4, 0x5, 0x6, -1, -1); 
-//                 const int safe_width = (width - width % 8) - 8;
-
-//                 for (int x = 0; x < safe_width; x += 8)
-//                 {
-//                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
-//                     __m256i src = _mm256_i32gather_epi32((int*)S, idx, 1);
-//                     __m256i src_perm = _mm256_permutevar8x32_epi32(_mm256_shuffle_epi8(src, SHUFFLE_MASK), PERMUTE_MASK);
-//                     _mm256_storeu_si256((__m256i*)(D + x * channels), src_perm);
-//                 } 
-//                 T* _tD = D + safe_width * channels;
-//                 for (int x = safe_width; x < width; x++, _tD += channels)
-//                 {   
-//                     const T* _tS = S + x_ofs[x];
-//                     for (int k = 0; k < channels; k++)
-//                         _tD[k] = _tS[k];
-//                 }
-//             }
-//             break;
-//         }
-//         default:
-//             throw std::runtime_error("Unsupported image type");
-//     }
-// }
-
 template <typename T>
 void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const 
 {   
@@ -135,18 +65,18 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
                 } 
                 break;
             }
-            case CV_16UC1:
+            case CV_16UC1: // checked
             {   
-                __m256i SHUFFLE_MASK = _mm256_setr_epi16(
-                0x0, 0x2, 0x4, 0x6, -1, -1, -1, -1,
-                0x0, 0x2, 0x4, 0x6, -1, -1, -1, -1);
-                __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x4, 0x5, -1, -1, -1, -1); 
+                const __m256i SHUFFLE_MASK = _mm256_setr_epi8(
+                0x0, 0x1, 0x4, 0x5, 0x8, 0x9, 0xC, 0xD, -1, -1, -1, -1, -1, -1, -1, -1,
+                0x0, 0x1, 0x4, 0x5, 0x8, 0x9, 0xC, 0xD, -1, -1, -1, -1, -1, -1, -1, -1);
+                const __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x4, 0x5, -1, -1, -1, -1);
                 safe_width = (width - width % 8) - 8;
 
                 for (int x = 0; x < safe_width; x += 8)
                 {
                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
-                    __m256i src = _mm256_i32gather_epi32((int*)S, idx, 1);
+                    __m256i src = _mm256_i32gather_epi32((int*)S, idx, 2);
                     __m256i src_perm = _mm256_permutevar8x32_epi32(_mm256_shuffle_epi8(src, SHUFFLE_MASK), PERMUTE_MASK);
                     _mm256_storeu_si256((__m256i*)(D + x * channels), src_perm);
                 }
@@ -154,20 +84,52 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
             }
             case CV_16UC3:
             {   
-                
+                __m256i SHUFFLE_MASK = _mm256_setr_epi8(
+                0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, -1, -1, -1, -1,
+                0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, -1, -1, -1, -1);
+                __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x2, 0x4, 0x5, 0x6, -1, -1); 
+                safe_width = (width - width % 4) - 4;
+                __m128i all_ones = _mm_set1_epi32(0xFFFFFFFF); 
+
+                for (int x = 0; x < safe_width; x += 4)
+                {
+                    __m128i idx = _mm_maskload_epi32((int*)(x_ofs + x), all_ones);
+                    __m256i src = _mm256_i32gather_epi64((long long*)S, idx, 2);
+                    __m256i src_perm = _mm256_permutevar8x32_epi32(_mm256_shuffle_epi8(src, SHUFFLE_MASK), PERMUTE_MASK);
+                    _mm256_storeu_si256((__m256i*)(D + x * channels), src_perm);
+                }
                 break;
             }
             case CV_32FC1:
-            {
+            {   
+                safe_width = (width - width % 8);
+                
+                for (int x = 0; x < safe_width; x += 8)
+                {
+                    __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
+                    __m256 src = _mm256_i32gather_ps((float*)S, idx, 4);
+                    _mm256_storeu_ps((float*)(D + x * channels), src);
+                }
                 break;
             }
             case CV_32FC3:
-            {
+            {   
+                safe_width = (width - width % 2) - 2;
+                __m128i all_ones = _mm_set1_epi32(0xFFFFFFFF); 
+
+                for (int x = 0; x < safe_width; x += 2)
+                {
+                    __m128 src_low = _mm_maskload_ps((float*)(S + x_ofs[x]), all_ones);
+                    __m128 src_high = _mm_maskload_ps((float*)(S + x_ofs[x + 1]), all_ones);
+                    _mm_storeu_ps((float*)(D + x * channels), src_low);
+                    _mm_storeu_ps((float*)(D + (x + 1) * channels), src_high);
+                }
                 break;
             }
             default:
                 throw std::runtime_error("Unsupported image type");
         }
+
         T* _tD = D + safe_width * channels;
         for (int x = safe_width; x < width; x++, _tD += channels)
         {   
@@ -214,13 +176,11 @@ void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& 
             break;
         case CV_16UC1:
         case CV_16UC3:
-            //TODO: implement
-            cout << "Not implemented" << endl;
+            cv::parallel_for_(range, resizeNNInvoker_AVX2<uint16_t>(input, output, inp_size, out_size, x_ofs, ify));
             break;
         case CV_32FC1:
         case CV_32FC3:
-            //TODO: implement
-            cout << "Not implemented" << endl;
+            cv::parallel_for_(range, resizeNNInvoker_AVX2<float>(input, output, inp_size, out_size, x_ofs, ify));
             break;
         default:
             throw std::runtime_error("Unsupported image type");

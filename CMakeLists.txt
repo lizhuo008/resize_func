@@ -36,7 +36,7 @@ else()
 endif()
 
 # check if use Test Mode
-add_definitions(-DTEST)
+# add_definitions(-DTEST)
 
 add_executable(resize_func ${SOURCE_FILES})
 
