@@ -2,9 +2,9 @@
 #include <cassert>
 #include <chrono>
 #include <opencv2/opencv.hpp>
-#include "imgproc.hpp"
-#include "../test/test.hpp"
-#include "utils.hpp"
+#include "./src/imgproc.hpp"
+#include "./test/test.hpp"
+#include "./src/utils.hpp"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ int main(void)
 #else
     // custom parameters
     // string inp_path = "../samples/grayscale1.jpg";
-    string inp_path = "../samples/RGB1.jpg";
+    string inp_path = "../samples/RGB1.jpg"; // the path is relative to compile directory (build/), not the project root
     string out_path = "output.jpg";
     cv::Size new_size(1024, 1024);
     // int interpolation = cv::INTER_LINEAR;

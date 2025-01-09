@@ -11,7 +11,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 set(SOURCE_FILES
-    src/main.cpp
+    main.cpp
     src/imgproc.cpp
     test/test.cpp
     src/utils.cpp
@@ -36,7 +36,7 @@ else()
 endif()
 
 # check if use Test Mode
-add_definitions(-DTEST)
+# add_definitions(-DTEST)
 
 add_executable(resize_func ${SOURCE_FILES})
 
