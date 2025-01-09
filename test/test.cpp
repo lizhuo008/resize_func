@@ -1,9 +1,9 @@
 #if defined(TEST)
 #include <iostream> 
 #include <opencv2/opencv.hpp>
-#include <imgproc.hpp>
-#include <test.hpp>
-#include <utils.hpp>
+#include "../src/imgproc.hpp"
+#include "test.hpp"
+#include "../src/utils.hpp"
 #include <chrono>
 #include <string>
 

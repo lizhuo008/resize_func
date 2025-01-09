@@ -1,11 +1,10 @@
 #include <iostream>
 #include <cassert>
-
 #include <chrono>
 #include <opencv2/opencv.hpp>
-#include <imgproc.hpp>
-#include <test.hpp>
-#include <utils.hpp>
+#include "imgproc.hpp"
+#include "../test/test.hpp"
+#include "utils.hpp"
 
 using namespace std;
 

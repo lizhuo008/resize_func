@@ -13,7 +13,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 set(SOURCE_FILES
     src/main.cpp
     src/imgproc.cpp
-    src/test.cpp
+    test/test.cpp
     src/utils.cpp
     src/simd.cpp
 )
@@ -36,7 +36,7 @@ else()
 endif()
 
 # check if use Test Mode
-# add_definitions(-DTEST)
+add_definitions(-DTEST)
 
 add_executable(resize_func ${SOURCE_FILES})
 

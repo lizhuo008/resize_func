@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <opencv2/opencv.hpp>
-#include <imgproc.hpp>
+#include "imgproc.hpp"
 #include <immintrin.h>
 
 using namespace std;
