@@ -187,3 +187,23 @@ void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& 
     }
     _mm_free(x_ofs);
 }
+
+void simd::resize_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation)
+{
+    output = cv::Mat(new_size, input.type());
+    cv::Size input_size = input.size();
+    double ifx = (double)input_size.width / new_size.width;
+    double ify = (double)input_size.height / new_size.height;
+
+    switch (interpolation)
+    {
+        case cv::INTER_NEAREST:
+            resizeNN_AVX2(input, output, input_size, new_size, ifx, ify);
+            break;
+        case cv::INTER_LINEAR:
+            // resizeBilinear_AVX2(input, output, input_size, new_size, ifx, ify);
+            break;
+        default:
+            std::cerr << "Interpolation method not implemented yet" << std::endl;
+    }
+}

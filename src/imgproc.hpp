@@ -128,6 +128,8 @@ void resizeBilinear_naive(const cv::Mat& input, cv::Mat& output, const cv::Size&
 /*
 simple resize function w/o any error checking, hardware acceleration, etc.
 */
+void resize_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation = cv::INTER_NEAREST);
+
 void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation = cv::INTER_NEAREST);
 
 namespace simd
@@ -149,6 +151,8 @@ namespace simd
         double ify;
     };
     void resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify);
+
+    void resize_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation = cv::INTER_NEAREST);
 }
 
 template class simd::resizeNNInvoker_AVX2<uint8_t>;

@@ -195,6 +195,66 @@ void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size
     }
 }
 
+void resize_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation)
+{
+    output = cv::Mat(new_size, input.type());
+    cv::Size input_size = input.size();
+    double ifx = (double)input_size.width / new_size.width;
+    double ify = (double)input_size.height / new_size.height;
+
+    switch (interpolation)
+    {
+        case cv::INTER_NEAREST:
+            switch (input.type())
+            {
+                case CV_8UC1:
+                    resizeNN_naive<uint8_t>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_8UC3:
+                    resizeNN_naive<uint8_t>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_16UC1:
+                    resizeNN_naive<uint16_t>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_16UC3:
+                    resizeNN_naive<uint16_t>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_32FC1:
+                    resizeNN_naive<float>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_32FC3:
+                    resizeNN_naive<float>(input, output, input_size, new_size, ifx, ify);
+                    break;
+            }
+            break;
+        case cv::INTER_LINEAR:
+            switch (input.type())
+            {
+                case CV_8UC1:
+                    resizeBilinear_naive<uint8_t>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_8UC3:
+                    resizeBilinear_naive<uint8_t>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_16UC1:
+                    resizeBilinear_naive<uint16_t>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_16UC3:
+                    resizeBilinear_naive<uint16_t>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_32FC1:
+                    resizeBilinear_naive<float>(input, output, input_size, new_size, ifx, ify);
+                    break;
+                case CV_32FC3:
+                    resizeBilinear_naive<float>(input, output, input_size, new_size, ifx, ify);
+                    break;
+            }
+            break;
+        default:
+            std::cerr << "Interpolation method not implemented yet" << std::endl;
+    }
+}
+
 void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation)
 {   
     output = cv::Mat(new_size, input.type());

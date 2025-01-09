@@ -12,12 +12,48 @@ int main(void)
 {   
 
 #if defined(TEST)
+    // cout << "******************************************" << endl;
+    // cout << "*************** Basic Test ***************" << endl;
+    // cout << "******************************************" << endl;
     // basic_test();
-    // multi_type_test();
-    // amp_shr_test();
-    multithread_test();
-    // standard_comp_test();
-    // simd_test();
+
+    /*
+    test multi type, amp shr, multithread, standard comp, simd can totally map the requirements
+
+    Actually, Our method satisfies the basic interpolation requirements, INTER_NEAREST and INTER_LINEAR
+
+    Both of them can meet all data types(channels and basic types), all input sizes, and all output sizes
+    and Multithread is also supported
+
+    Specialized SIMD is also supported, which can accelerate the performance of the INTER_NEAREST interpolation
+     */
+    cout << "***************************************************" << endl;
+    cout << "******************* Multi Type Test ***************" << endl;
+    cout << "***************************************************" << endl;
+    multi_type_test(cv::INTER_NEAREST);
+    multi_type_test(cv::INTER_LINEAR);
+    cout << "***************************************************" << endl;
+    cout << "******************* Amp Shr Test ******************" << endl;
+    cout << "***************************************************" << endl;
+    amp_shr_test(cv::INTER_NEAREST);
+    amp_shr_test(cv::INTER_NEAREST);
+    amp_shr_test(cv::INTER_LINEAR);
+    amp_shr_test(cv::INTER_LINEAR);
+    cout << "**************************************************" << endl;
+    cout << "*************** Multithread Test *****************" << endl;
+    cout << "**************************************************" << endl;
+    multithread_test(cv::INTER_NEAREST);
+    multithread_test(cv::INTER_LINEAR);
+    cout << "**************************************************" << endl;
+    cout << "******************* SIMD Test ********************" << endl;
+    cout << "**************************************************" << endl;
+    simd_test();
+    cout << "**************************************************" << endl;
+    cout << "*************** Standard Comp Test ***************" << endl;
+    cout << "**************************************************" << endl;
+    standard_comp_test(cv::INTER_NEAREST);
+    standard_comp_test(cv::INTER_LINEAR);
+    
 
     cout << "All tests passed" << endl;
 #else
