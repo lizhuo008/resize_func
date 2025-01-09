@@ -1,6 +1,35 @@
-# Image Processing Library Documentation
+# Image Resizing Library Documentation
 
-This document provides a comprehensive overview of the components of the image processing library. The project is divided into several files, each handling a specific functionality. Below is the structure of the library:
+**Author:** Lizhuo Luo, Jiachen Zhou
+
+**Email:** <12111925@mail.sustech.edu.cn>
+
+**Date:** 2025-01-09
+
+---
+
+This document provides a comprehensive overview of the components of the image resizing library. 
+
+This project realizes the image resizing function based on OpenCV. We develop the library with the following goals:
+
+1. Support different interpolation methods, including **Nearest Neighbor Interpolation** and **Bilinear Interpolation**. Any ratio of the width and height is supported, whatever **amplification** or **shrinking** is supported.
+2. Support different data type for both **Nearest Neighbor Interpolation** and **Bilinear Interpolation**, including **8UC1**, **8UC3**, **16UC1**, **16UC3**, **32FC1**, **32FC3**.
+3. Support multithreading for both **Nearest Neighbor Interpolation** and **Bilinear Interpolation**. Use OpenCV's `cv::parallel_for_` to implement the multithreading.
+4. SIMD optimization for **Nearest Neighbor Interpolation** Only. Use AVX2 instructions 256 bits registers based on the multithreading infrastructure provided by OpenCV, `cv::parallel_for_`. 
+
+We open-source the project on github: https://github.com/lizhuo008/resize_func.git
+
+**Quick Start**:
+
+```bash
+git clone https://github.com/lizhuo008/resize_func.git
+cd resize_func
+mkdir build
+cd build
+cmake ..
+make
+./resize_func
+```
 
 ---
 
@@ -164,11 +193,17 @@ void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_si
 
 ## File: `simd.cpp`
 
-This file provides SIMD-optimized functions for image processing tasks.
+This file provides SIMD-optimized functions for image processing tasks. Functions here are in the `simd` namespace, declared in `imgproc.hpp`.
+
+To reach the best performance, we use AVX2 instructions 256 bits registers based on the multithreading infrastructure provided by OpenCV, `cv::parallel_for_`.
 
 ---
 
-### Class: `resizeNNInvoker_AVX2`
+### Class: `resizeNNInvoker_AVX2` 
+
+This class is the SIMD version of the `resizeNNInvoker_custom` class, which is provide SIMD optimization using AVX2 instructions for the nearest-neighbor interpolation. 
+
+Different data types are supported, and the class is templated. But the realization among different data types are huge different limited by the restriction of the register size and instruction set.
 
 #### Constructor
 
@@ -184,6 +219,10 @@ simd::resizeNNInvoker_AVX2<T>::resizeNNInvoker_AVX2(const cv::Mat& _input, cv::M
 
 #### Operator Overload
 
+The realization of the operator overload is the most important part of the class. The basic idea is to deal the image by pixel, and use the ``_mm256`` or ``_mm256`` instructions to **(1) get the x offset of the pixel, (2) gather the pixel data from the input image, (3) shuffle and permute the pixel data to get certain byte data. (4) store the data to the output image.** 
+
+**WARNING:** The process of the pixel data is easy to write data out of the boundary of the image, so we need to be careful about the boundary check.
+
 ```cpp
 template <typename T>
 void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
@@ -194,21 +233,21 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
 
 ---
 
-### Function: `resizeNN_AVX2`
+### Function: `resizeNN_AVX2` and `resize_AVX2` (Only for Experiment Purpose)
 
 ```cpp
 void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify)
 {
     // Implements SIMD-optimized resizing using AVX2.
 }
+
+void simd::resize_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation)
+{
+    // Implements SIMD-optimized resizing using AVX2.
+}
 ```
 
-- **Purpose**: Uses SIMD intrinsics for accelerated nearest-neighbor resizing.
-
-- **Key Steps**:
-  1. Precomputes offsets (`x_ofs`) for efficient memory access.
-  2. Leverages `_mm256` instructions for parallel processing of pixel data.
-  3. Handles edge cases for non-multiple-of-8 widths.
+- **Purpose**: Precompute the x offset for `resizeNNInvoker_AVX2` and this function has already been integrated into the `resize_custom` function.
 
 ---
 
