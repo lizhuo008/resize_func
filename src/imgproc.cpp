@@ -60,6 +60,20 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
         x_ofs[x] = min(sx, inp_size.width - 1);
     }
 
+    int* x_ofs_32F;
+    if (input.type() == CV_32FC3)
+    {   
+       
+        x_ofs_32F = static_cast<int*>(_mm_malloc(((out_size.width + 7) & -8) * sizeof(int) * channels, 32));
+        for(int x = 0; x < out_size.width; x ++)
+        {
+            for(int k = 0; k < channels; k++)
+                x_ofs_32F[x * channels + k] = x_ofs[x] + k;
+        }
+        _mm_free(x_ofs);
+        x_ofs = x_ofs_32F;
+    }
+
     cv::Range range(0, out_size.height);
 
     switch (input.type())

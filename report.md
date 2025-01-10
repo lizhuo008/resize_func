@@ -7,7 +7,7 @@
 **Date:** 2025-01-09
 
 ---
-
+## Introduction
 This document provides a comprehensive overview of the components of the image resizing library. 
 
 This project realizes the image resizing function based on OpenCV. We develop the library with the following goals:
@@ -18,6 +18,24 @@ This project realizes the image resizing function based on OpenCV. We develop th
 4. SIMD optimization for **Nearest Neighbor Interpolation** Only. Use AVX2 instructions 256 bits registers based on the multithreading infrastructure provided by OpenCV, `cv::parallel_for_`. 
 
 We open-source the project on github: https://github.com/lizhuo008/resize_func.git
+
+
+**Dependencies**:
+
+Before building or running this project, ensure the following requirements are met:
+
+- **CMake >= 3.10:**
+Required for configuring and generating build files.
+
+- **C++ 11:**
+Ensure your compiler supports at least the C++11 standard.
+
+- **OpenCV >= 4.6.0:**
+Used for image processing tasks; this exact version is required for compatibility. Follow the instructions below to install OpenCV.
+
+  ```bash
+  sudo apt-get install libopencv-dev
+  ```
 
 **Quick Start**:
 
@@ -30,8 +48,6 @@ cmake ..
 make
 ./resize_func
 ```
-
----
 
 ## Project Structure
 

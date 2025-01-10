@@ -114,29 +114,47 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
             }
             case CV_32FC3:
             {   
-                safe_width = (width - width % 2) - 2;
-                __m128i all_ones = _mm_set1_epi32(0xFFFFFFFF); 
+                // safe_width = (width - width % 2) - 2;
+                // __m128i all_ones = _mm_set1_epi32(0xFFFFFFFF); 
 
-                for (int x = 0; x < safe_width; x += 2)
+                // for (int x = 0; x < safe_width; x += 2)
+                // {
+                //     __m128 src_low = _mm_maskload_ps((float*)(S + x_ofs[x]), all_ones);
+                //     __m128 src_high = _mm_maskload_ps((float*)(S + x_ofs[x + 1]), all_ones);
+                //     _mm_storeu_ps((float*)(D + x * channels), src_low);
+                //     _mm_storeu_ps((float*)(D + (x + 1) * channels), src_high);
+                // }
+
+                safe_width = (width * channels - (width * channels) % 8);
+                for (int x = 0; x < safe_width; x += 8)
                 {
-                    __m128 src_low = _mm_maskload_ps((float*)(S + x_ofs[x]), all_ones);
-                    __m128 src_high = _mm_maskload_ps((float*)(S + x_ofs[x + 1]), all_ones);
-                    _mm_storeu_ps((float*)(D + x * channels), src_low);
-                    _mm_storeu_ps((float*)(D + (x + 1) * channels), src_high);
+                    __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
+                    __m256 src = _mm256_i32gather_ps((float*)S, idx, 4);
+                    _mm256_storeu_ps((float*)(D + x), src);
                 }
                 break;
             }
             default:
                 throw std::runtime_error("Unsupported image type");
         }
-
-        T* _tD = D + safe_width * channels;
-        for (int x = safe_width; x < width; x++, _tD += channels)
-        {   
-            const T* _tS = S + x_ofs[x];
-            for (int k = 0; k < channels; k++)
-                _tD[k] = _tS[k];
+        if (input.type() != CV_32FC3)
+        {
+            T* _tD = D + safe_width * channels;
+            for (int x = safe_width; x < width; x++, _tD += channels)
+            {   
+                const T* _tS = S + x_ofs[x];
+                for (int k = 0; k < channels; k++)
+                    _tD[k] = _tS[k];
+            }
+        }else{
+            T* _tD = D + safe_width;
+            for (int x = safe_width; x < width * channels; x++, _tD++)
+            {   
+                const T* _tS = S + x_ofs[x];
+                _tD[0] = _tS[0];
+            }
         }
+
     }   
 }
 
@@ -166,6 +184,39 @@ void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& 
         x_ofs[x] = min(sx, inp_size.width - 1);
     }
 
+    int* x_ofs_32F;
+    if (input.type() == CV_32FC3)
+    {   
+        x_ofs_32F = static_cast<int*>(_mm_malloc(((out_size.width + 7) & -8) * sizeof(int) * channels, 32));
+        for(int x = 0; x < out_size.width; x ++)
+        {
+            for(int k = 0; k < channels; k++)
+                x_ofs_32F[x * channels + k] = x_ofs[x] + k;
+        }
+        _mm_free(x_ofs);
+        x_ofs = x_ofs_32F;
+    }
+
+//more aggressive version get a little bit faster 
+// if (input.type() == CV_32FC3)
+// {
+//     x_ofs_32F = static_cast<int*>(_mm_malloc(((out_size.width + 7) & -8) * sizeof(int) * channels, 32));
+
+//     __m256i vChannels = _mm256_set1_epi32(channels); 
+//     for (int x = 0; x < out_size.width; x += 8) 
+//     {    
+//         __m256i base = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(&x_ofs[x]));
+//         for (int k = 0; k < channels; ++k) 
+//         {
+//             __m256i offset = _mm256_add_epi32(base, _mm256_set1_epi32(k));
+//             _mm256_storeu_si256(reinterpret_cast<__m256i*>(&x_ofs_32F[x * channels + k * 8]), offset);
+//         }
+//     }
+//     _mm_free(x_ofs);
+//     x_ofs = x_ofs_32F;
+// }
+
+    
     cv::Range range(0, out_size.height);
 
     switch (input.type())
