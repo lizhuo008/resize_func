@@ -508,7 +508,7 @@ All data types are tested, but only partial results are shown here.
 
 - **Result**:
 
-<p align="center">
+<!-- <p align="center">
   <img src="test_result_sample/NN512.png" alt="Data type 0" width="40%">
   <img src="test_result_sample/cv_NN512.png" alt="Data type 16" width="40%">
 </p>
@@ -516,11 +516,44 @@ All data types are tested, but only partial results are shown here.
 <p align="center">
   <img src="test_result_sample/BL512.png" alt="Data type 0" width="40%">
   <img src="test_result_sample/cv_BL512.png" alt="Data type 16" width="40%">
-</p>
+</p> -->
 
-  - **Analysis**: Due to the limitation of the register size and instruction set, the accuracy of the resize operation is not as good as the OpenCV's native resizing function. But the difference is negligible for most of the applications. 
+<div style="display: flex; justify-content: center;">
+<table border="1" style="border-collapse: collapse; text-align: center; width: 90%;">
+  <!-- 表头 -->
+  <tr>
+    <th></th> <!-- 空单元格 -->
+    <th>NN Interpolation</th>
+    <th>BL Interpolation</th>
+  </tr>
 
-    **There is no significant difference by human eye for all data types.**
+  <!-- 第一行 -->
+  <tr>
+    <th>Custom</th>
+    <td>
+      <img src="test_result_sample/NN512.png" alt="Custom NN" width="90%">
+    </td>
+    <td>
+      <img src="test_result_sample/BL512.png" alt="Custom BL" width="90%">
+    </td>
+  </tr>
+
+  <!-- 第二行 -->
+  <tr>
+    <th>OpenCV</th>
+    <td>
+      <img src="test_result_sample/cv_NN512.png" alt="OpenCV NN" width="90%">
+    </td>
+    <td>
+      <img src="test_result_sample/cv_BL512.png" alt="OpenCV BL" width="90%">
+    </td>
+  </tr>
+</table>
+</div>
+
+
+
+- **Analysis**:   **There is no significant difference by human eye for all data types.** First row is customed resize function, and the second row is the OpenCV's native resizing function. Left column is the **Nearest Neighbor Interpolation**, which is supported by SIMD,and the right column is the **Bilinear Interpolation**. Due to the limitation of the register size and instruction set, the accuracy of the resize operation is not as good as the OpenCV's native resizing function. But the difference is negligible for most of the applications. 
 
 #### **Efficiency**:
 
