@@ -387,6 +387,7 @@ This file declares utility functions and macros to support image processing and 
 ```
 
 - **Purpose**: Provide a easy way to convert the image type, which is useful for the test.
+
 ## File: `test.hpp` and `test.cpp`
 
 ### Function Declarations
@@ -427,8 +428,6 @@ void multithread_test(int interpolation = cv::INTER_NEAREST);
 
 - **Purpose**: Compares single-threaded and parallel computing resizing performance.
 
-![Multithread test result](test_result_sample/Figure_1.png)
-
 #### `simd_test`
 
 ```cpp
@@ -436,8 +435,6 @@ void simd_test();
 ```
 
 - **Purpose**: Benchmarks SIMD-based resizing against other implementations for performance evaluation.
-
-![SIMD test result](test_result_sample/Figure_2.png)
 
 #### `standard_comp_test`
 
@@ -447,14 +444,47 @@ void standard_comp_test(int interpolation = cv::INTER_NEAREST);
 
 - **Purpose**: Benchmarks custom resizing against OpenCV's native resizing functions.
 
-![OpenCV comparison test result 1](test_result_sample/Figure_3_d0.png)
-![OpenCV comparison test result 2](test_result_sample/Figure_3_d2.png)
-![OpenCV comparison test result 3](test_result_sample/Figure_3_d16.png)
-![OpenCV comparison test result 4](test_result_sample/Figure_3_d18.png)
+---
+
+### Test Result and Analysis
+
+#### `multithread_test`
+
+- **Result**:
+
+![Multithread Test Result using Nearest Neighbor Interpolation](test_result_sample/Figure_1_1.png)
+![Multithread Test Result using Bilinear Interpolation](test_result_sample/Figure_1_2.png)
+
+- **Analysis**: Parallelization has a significant impact on improving resize performance, especially for larger and higher precision images. The benefits of multithreading become more evident when dealing with formats such as 16UC1, 16UC3, 32FC1, and 32FC3, where the Naive Resize method performs considerably slower. While bilinear interpolation inherently requires more time than nearest neighbor, the parallel approach substantially mitigates this.
 
 ---
 
+#### `simd_test`
 
+- **Result**:
 
+![SIMD Test Result](test_result_sample/Figure_2.png)
 
+- **Analysis**: SIMD provides a clear advantage over custom resizing in all tested cases, demonstrating its efficiency, especially for larger image formats and multi-channel images.
 
+---
+
+#### `standard_comp_test`
+
+- **Result for Nearest Neighbor Interpolation**:
+
+![Standard Test Result for data type 0 using Nearest Neighbor Interpolation](test_result_sample/Figure_3_d0NN.png)
+![Standard Test Result for data type 16 using Nearest Neighbor Interpolation](test_result_sample/Figure_3_d16NN.png)
+![Standard Test Result for data type 18 using Nearest Neighbor Interpolation](test_result_sample/Figure_3_d18NN.png)
+
+- **Analysis**: OpenCV is significantly more efficient than the Custom Resize method for nearest neighbor interpolation, showing clear advantages in terms of both speed and scalability as image size increases. The performance gain with OpenCV is particularly notable for larger images, with up to 55.9% faster resizing, making OpenCV a highly suitable choice for real-time applications or large-scale image processing tasks.
+
+- **Result for Bilinear Interpolation**:
+
+![Standard Test Result for data type 0 using Bilinear Interpolation](test_result_sample/Figure_3_d0BL.png)
+![Standard Test Result for data type 16 using Bilinear Interpolation](test_result_sample/Figure_3_d16BL.png)
+![Standard Test Result for data type 18 using Bilinear Interpolation](test_result_sample/Figure_3_d18BL.png)
+
+- **Analysis**: OpenCV remains the faster and more efficient choice for bilinear interpolation across all test cases, with differences consistently ranging from 26.7% to 34.7% faster. The image size and data type both influence the magnitude of the performance difference, but OpenCV's optimizations allow it to consistently outperform Custom Resize, particularly for larger images and higher precision formats.
+
+---
