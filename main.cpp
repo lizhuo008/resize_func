@@ -10,13 +10,14 @@ using namespace std;
 
 int main(void)
 {   
+/*
+for code and structure simplicity, we use the same code for both test and normal use
 
+you can set the TEST macro to enable the test mode
+
+a standard test is provided, which can test the performance of the interpolation methods
+*/
 #if defined(TEST)
-    // cout << "******************************************" << endl;
-    // cout << "*************** Basic Test ***************" << endl;
-    // cout << "******************************************" << endl;
-    // basic_test();
-
     /*
     test multi type, amp shr, multithread, standard comp, simd can totally map the requirements
 
@@ -54,45 +55,9 @@ int main(void)
     standard_comp_test(cv::INTER_NEAREST);
     standard_comp_test(cv::INTER_LINEAR);
     
-
     cout << "All tests passed" << endl;
+    
 #else
-    // // custom parameters
-    // // string inp_path = "../samples/grayscale1.jpg";
-    // string inp_path = "../samples/RGB1.jpg"; // the path is relative to compile directory (build/), not the project root
-    // string out_path = "output.jpg";
-    // cv::Size new_size(1024, 1024);
-    // // int interpolation = cv::INTER_LINEAR;
-    // int interpolation = cv::INTER_NEAREST;
-
-    // cv::Mat input = cv::imread(inp_path);
-    // // CVT_3C21C(input);
-    // // CVT_8U232F(input);
-    // CVT_8U216U(input);
-
-    // cout << "Input image type: " << input.type() << endl;
-    
-    // cv::Mat output = cv::Mat::zeros(new_size, input.type());
-
-    // cout << "Output image step: " << output.step << endl;
-    
-    // double ifx = (double)input.size().width / new_size.width;
-    // double ify = (double)input.size().height / new_size.height;
-    // // resizeNN_naive<uint16_t>(input, output, input.size(), new_size, ifx, ify);
-    // // resizeBilinear_naive<float>(input, output, input.size(), new_size, ifx, ify);
-    // // resize_custom(input, output, new_size, cv::INTER_NEAREST);
-    // resize_custom(input, output, new_size, cv::INTER_LINEAR);
-    
-
-    // cout << "Output image type: " << output.type() << endl;
-
-    // // output.convertTo(output, CV_8U, 1.0/256.0);
-    // // CVT_32F28U(output);
-    // CVT_16U28U(output);
-    // cv::imwrite(out_path, output);
-    // cv::imshow("Resized Image", output);
-    // cv::waitKey(0);
-    // cv::destroyAllWindows(); // close all windows, is it necessary?
     cout << "Test mode is not enabled" << endl;
 
     string inp_path;
@@ -102,7 +67,7 @@ int main(void)
     cin >> inp_path;
     cout << "Please input the new size (width height): ";
     cin >> new_size.width >> new_size.height;
-    cout << "Please input the interpolation method: ";
+    cout << "Please input the interpolation method (0: Nearest Neighbor, 1: Bilinear): ";
     cin >> interpolation;
 
     cv::Mat input = cv::imread(inp_path);

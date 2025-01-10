@@ -132,6 +132,7 @@ void resize_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& new_siz
 
 void resize_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation = cv::INTER_NEAREST);
 
+#if defined(USE_AVX2)
 namespace simd
 {
     template <typename T>
@@ -150,13 +151,16 @@ namespace simd
         int* x_ofs;
         double ify;
     };
+#if defined(TEST)
     void resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify);
 
     void resize_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation = cv::INTER_NEAREST);
+#endif
 }
 
 template class simd::resizeNNInvoker_AVX2<uint8_t>;
 template class simd::resizeNNInvoker_AVX2<uint16_t>;
 template class simd::resizeNNInvoker_AVX2<float>;
 
+#endif
 #endif
