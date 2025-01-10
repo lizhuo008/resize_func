@@ -331,6 +331,37 @@ void measurePerformance(const cv::Size& input_size, const cv::Size& new_size, in
     cout << "OpenCV Resize Time: " << openCVTime / test_times << " ms\n";
 }
 
+void measure_accuracy(const cv::Size& input_size, const cv::Size& new_size, int dtype, int interpolation)
+{
+    cv::Mat input;
+    cv::Mat output_custom;
+    cv::Mat output_openCV;
+
+    createTestImage(input, input_size, dtype, 0);
+    output_custom = cv::Mat::zeros(new_size, dtype);
+    output_openCV = cv::Mat::zeros(new_size, dtype);
+
+    if (interpolation == cv::INTER_NEAREST)
+    {
+        simd::resize_AVX2(input, output_custom, new_size, cv::INTER_NEAREST);
+        cv::resize(input, output_openCV, new_size, cv::INTER_NEAREST);
+    }
+    else
+    {
+        resize_custom(input, output_custom, new_size, cv::INTER_LINEAR);
+        cv::resize(input, output_openCV, new_size, cv::INTER_LINEAR);
+    }
+
+    double max_diff = 0;
+    double max_diff_percentage = 0;
+    double diff = cv::norm(output_custom, output_openCV, cv::NORM_L2);
+    double diff_percentage = diff / cv::norm(output_custom, cv::NORM_L2) * 100;
+    
+    cout << "Max Diff: " << max_diff << endl;
+    cout << "Max Diff Percentage: " << max_diff_percentage << "%" << endl;
+
+}
+
 void standard_comp_test(int interpolation)
 {
     cv::Mat testImg;
@@ -360,6 +391,7 @@ void standard_comp_test(int interpolation)
                          << " Data type: " << dtype 
                          << " Interpolation: " << interpolation << endl;
                 measurePerformance(input_size, output_size, dtype, interpolation);
+                measure_accuracy(input_size, output_size, dtype, interpolation);
             }
         }
     }
