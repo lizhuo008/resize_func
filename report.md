@@ -16,6 +16,7 @@ This project realizes the image resizing function based on OpenCV. We develop th
 2. Support different data type for both **Nearest Neighbor Interpolation** and **Bilinear Interpolation**, including **8UC1**, **8UC3**, **16UC1**, **16UC3**, **32FC1**, **32FC3**.
 3. Support multithreading for both **Nearest Neighbor Interpolation** and **Bilinear Interpolation**. Use OpenCV's `cv::parallel_for_` to implement the multithreading.
 4. SIMD optimization for **Nearest Neighbor Interpolation** Only. Use AVX2 instructions 256 bits registers based on the multithreading infrastructure provided by OpenCV, `cv::parallel_for_`. 
+5. Reach `TEST` mode by adding `-DTEST` in the cmake command. And we use macros to manipulate the different mode and hardware acceleration.
 
 We open-source the project on github: https://github.com/lizhuo008/resize_func.git
 
@@ -370,14 +371,22 @@ This file declares utility functions and macros to support image processing and 
 #define TIME_END(NAME) \
     auto end = std::chrono::high_resolution_clock::now(); \
     auto duration = std::chrono::duration<double, std::milli>(end - start).count(); \
-    // std::cout << NAME << " time: " << duration << "ms" << std::endl;
 ```
 
 - **Purpose**: Provides an easy-to-use mechanism for measuring function execution time.
 
 #### Image Conversion Macros
 
+```cpp
+#define CVT_3C21C(img) cv::cvtColor(img, img, cv::COLOR_BGR2GRAY)
+#define CVT_1C23C(img) cv::cvtColor(img, img, cv::COLOR_GRAY2BGR)
+#define CVT_8U216U(img) img.convertTo(img, CV_16U, 256.0)
+#define CVT_16U28U(img) img.convertTo(img, CV_8U, 1.0/256.0)
+#define CVT_8U232F(img) img.convertTo(img, CV_32F, 1.0/255.0)
+#define CVT_32F28U(img) img.convertTo(img, CV_8U, 255.0)
+```
 
+- **Purpose**: Provide a easy way to convert the image type, which is useful for the test.
 ## File: `test.hpp` and `test.cpp`
 
 ### Function Declarations

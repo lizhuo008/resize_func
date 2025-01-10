@@ -183,7 +183,7 @@ void amp_shr_test(int interpolation)
 
 void multithread_test(int interpolation)
 {
-    int test_times = 100;
+    int test_times = 200;
     cv::Size size(1024, 1024);
 
     cv::Mat testImg_8UC1, testImg_8UC3, testImg_16UC1, testImg_16UC3, testImg_32FC1, testImg_32FC3;
@@ -208,19 +208,23 @@ void multithread_test(int interpolation)
     double parallelTime = 0;
     for (size_t i = 0; i < test_times; i++)
     {   
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_naive(testImg_8UC1, testImg_8UC1_resn, new_size, interpolation);
-        TIME_END("Naive");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Naive");
 
-        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+        naiveTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_8UC1, testImg_8UC1_resp, new_size, interpolation);
-        TIME_END("Parallel");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Parallel");
 
-        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+        parallelTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     cout << "Naive Resize Time for 8UC1: " << naiveTime / test_times << " ms\n";
     cout << "Parallel Resize Time for 8UC1: " << parallelTime / test_times << " ms\n";
@@ -229,19 +233,23 @@ void multithread_test(int interpolation)
     parallelTime = 0;
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_naive(testImg_8UC3, testImg_8UC3_resn, new_size, interpolation);
-        TIME_END("Naive");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Naive");
 
-        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+        naiveTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_8UC3, testImg_8UC3_resp, new_size, interpolation);
-        TIME_END("Parallel");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Parallel");
 
-        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+        parallelTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     cout << "Naive Resize Time for 8UC3: " << naiveTime / test_times << " ms\n";
     cout << "Parallel Resize Time for 8UC3: " << parallelTime / test_times << " ms\n";
@@ -250,19 +258,23 @@ void multithread_test(int interpolation)
     parallelTime = 0;
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_naive(testImg_16UC1, testImg_16UC1_resn, new_size, interpolation);
-        TIME_END("Naive");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Naive");
 
-        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+        naiveTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_16UC1, testImg_16UC1_resp, new_size, interpolation);
-        TIME_END("Parallel");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Parallel");
 
-        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+        parallelTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     cout << "Naive Resize Time for 16UC1: " << naiveTime / test_times << " ms\n";
     cout << "Parallel Resize Time for 16UC1: " << parallelTime / test_times << " ms\n";
@@ -271,19 +283,23 @@ void multithread_test(int interpolation)
     parallelTime = 0;
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_naive(testImg_16UC3, testImg_16UC3_resn, new_size, interpolation);
-        TIME_END("Naive");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Naive");
 
-        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+        naiveTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_16UC3, testImg_16UC3_resp, new_size, interpolation);
-        TIME_END("Parallel");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Parallel");
 
-        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+        parallelTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     cout << "Naive Resize Time for 16UC3: " << naiveTime / test_times << " ms\n";
     cout << "Parallel Resize Time for 16UC3 " << parallelTime / test_times << " ms\n";
@@ -292,19 +308,23 @@ void multithread_test(int interpolation)
     parallelTime = 0;
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_naive(testImg_32FC1, testImg_32FC1_resn, new_size, interpolation);
-        TIME_END("Naive");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Naive");
 
-        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+        naiveTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_32FC1, testImg_32FC1_resp, new_size, interpolation);
-        TIME_END("Parallel");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Parallel");
 
-        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+        parallelTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     cout << "Naive Resize Time for 32FC1: " << naiveTime / test_times << " ms\n";
     cout << "Parallel Resize Time for 32FC1: " << parallelTime / test_times << " ms\n";
@@ -313,19 +333,23 @@ void multithread_test(int interpolation)
     parallelTime = 0;
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_naive(testImg_32FC3, testImg_32FC3_resn, new_size, interpolation);
-        TIME_END("Naive");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Naive");
 
-        naiveTime += std::chrono::duration<double, std::milli>(end - start).count();
+        naiveTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (size_t i = 0; i < test_times; i++)
     {
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_32FC3, testImg_32FC3_resp, new_size, interpolation);
-        TIME_END("Parallel");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Parallel");
 
-        parallelTime += std::chrono::duration<double, std::milli>(end - start).count();
+        parallelTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     cout << "Naive Resize Time for 32FC3: " << naiveTime / test_times << " ms\n";
     cout << "Parallel Resize Time for 32FC3: " << parallelTime / test_times << " ms\n";
@@ -336,7 +360,7 @@ void measurePerformance(const cv::Size& input_size, const cv::Size& new_size, in
 {
     double customTime = 0;
     double openCVTime = 0;
-    int test_times = 100;
+    int test_times = 200;
 
     cv::Mat myOutput;
     cv::Mat input;
@@ -347,20 +371,24 @@ void measurePerformance(const cv::Size& input_size, const cv::Size& new_size, in
         {
             createTestImage(input, input_size, dtype, i);
             myOutput = cv::Mat::zeros(new_size, dtype);
-            TIME_START; 
+            // TIME_START; 
+            auto start_time = std::chrono::high_resolution_clock::now();
             simd::resize_AVX2(input, myOutput, new_size, cv::INTER_NEAREST);
-            TIME_END("Custom");
-            customTime += std::chrono::duration<double, std::milli>(end - start).count();
+            auto end_time = std::chrono::high_resolution_clock::now();
+            // TIME_END("Custom");
+            customTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
         }
     }else{
         for (size_t i = 0; i < test_times; i++)
         {
             createTestImage(input, input_size, dtype, i);
             myOutput = cv::Mat::zeros(new_size, dtype);
-            TIME_START;
+            // TIME_START;
+            auto start_time = std::chrono::high_resolution_clock::now();
             resize_custom(input, myOutput, new_size, cv::INTER_LINEAR);
-            TIME_END("Custom");
-            customTime += std::chrono::duration<double, std::milli>(end - start).count();
+            auto end_time = std::chrono::high_resolution_clock::now();
+            // TIME_END("Custom");
+            customTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
         }
     }
 
@@ -369,11 +397,13 @@ void measurePerformance(const cv::Size& input_size, const cv::Size& new_size, in
     {
         createTestImage(input, input_size, dtype, i);
         openCVOutput = cv::Mat::zeros(new_size, dtype);
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         cv::resize(input, openCVOutput, new_size, interpolation);
-        TIME_END("OpenCV");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("OpenCV");
 
-        openCVTime += std::chrono::duration<double, std::milli>(end - start).count();
+        openCVTime += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     
     cout << "Custom Resize Time: " << customTime / test_times << " ms\n";
@@ -431,7 +461,7 @@ void standard_comp_test(int interpolation)
 
     for (int dtype : data_types) {
         for (const auto& input_size : input_sizes) {
-        for (const auto& output_size : output_sizes) {
+            for (const auto& output_size : output_sizes) {
                 std::cout << "Testing with:"
                          << " Input size: " << input_size
                          << " Output size: " << output_size
@@ -446,7 +476,7 @@ void standard_comp_test(int interpolation)
 
 void simd_test()
 {
-    int test_times = 100;
+    int test_times = 200;
     cv::Size size(512, 512);
     cv::Size new_size(1024, 1024);
     double ifx = 1.0 * new_size.width / size.width;
@@ -464,41 +494,49 @@ void simd_test()
         createTestImage(testImg_8UC1, size, CV_8UC1, i);
         testImg_8UC1_res_simd = cv::Mat::zeros(new_size, testImg_8UC1.type());
         
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         simd::resize_AVX2(testImg_8UC1, testImg_8UC1_res_simd, new_size, cv::INTER_NEAREST);
-        TIME_END("SIMD");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("SIMD");
 
-        duration_simd_8UC1+= std::chrono::duration<double, std::milli>(end - start).count();
+        duration_simd_8UC1+= std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_8UC1, size, CV_8UC1, i);
         testImg_8UC1_res_custom = cv::Mat::zeros(new_size, testImg_8UC1.type());
 
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_8UC1, testImg_8UC1_res_custom, new_size, cv::INTER_NEAREST);
-        TIME_END("Custom");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Custom");
 
-        duration_custom_8UC1 += std::chrono::duration<double, std::milli>(end - start).count();
+        duration_custom_8UC1 += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_8UC3, size, CV_8UC3, i);
 
         testImg_8UC3_res_simd = cv::Mat::zeros(new_size, testImg_8UC3.type());
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         simd::resize_AVX2(testImg_8UC3, testImg_8UC3_res_simd, new_size, cv::INTER_NEAREST);
-        TIME_END("SIMD");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("SIMD");
 
-        duration_simd_8UC3+= std::chrono::duration<double, std::milli>(end - start).count();
+        duration_simd_8UC3+= std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_8UC3, size, CV_8UC3, i);
 
         testImg_8UC3_res_custom = cv::Mat::zeros(new_size, testImg_8UC3.type());
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_8UC3, testImg_8UC3_res_custom, new_size, cv::INTER_NEAREST);
-        TIME_END("Custom");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Custom");
 
-        duration_custom_8UC3 += std::chrono::duration<double, std::milli>(end - start).count();
+        duration_custom_8UC3 += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
 
     cout << "AVG SIMD 8UC1 time: " << duration_simd_8UC1 / test_times << "ms" << endl;
@@ -516,41 +554,49 @@ void simd_test()
         createTestImage(testImg_16UC1, size, CV_16UC1, i);
         testImg_16UC1_res_simd = cv::Mat::zeros(new_size, testImg_16UC1.type());
         
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         simd::resize_AVX2(testImg_16UC1, testImg_16UC1_res_simd, new_size, cv::INTER_NEAREST);
-        TIME_END("SIMD");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("SIMD");
 
-        duration_simd_16UC1+= std::chrono::duration<double, std::milli>(end - start).count();
+        duration_simd_16UC1+= std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_16UC1, size, CV_16UC1, i);
         testImg_16UC1_res_custom = cv::Mat::zeros(new_size, testImg_16UC1.type());
 
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_16UC1, testImg_16UC1_res_custom, new_size, cv::INTER_NEAREST);
-        TIME_END("Custom");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Custom");
 
-        duration_custom_16UC1 += std::chrono::duration<double, std::milli>(end - start).count();
+        duration_custom_16UC1 += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_16UC3, size, CV_16UC3, i);
         testImg_16UC3_res_simd = cv::Mat::zeros(new_size, testImg_16UC3.type());
 
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         simd::resize_AVX2(testImg_16UC3, testImg_16UC3_res_simd, new_size, cv::INTER_NEAREST);
-        TIME_END("SIMD");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("SIMD");
 
-        duration_simd_16UC3+= std::chrono::duration<double, std::milli>(end - start).count();
+        duration_simd_16UC3+= std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_16UC3, size, CV_16UC3, i);
         testImg_16UC3_res_custom = cv::Mat::zeros(new_size, testImg_16UC3.type());
 
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_16UC3, testImg_16UC3_res_custom, new_size, cv::INTER_NEAREST);
-        TIME_END("Custom");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Custom");
 
-        duration_custom_16UC3 += std::chrono::duration<double, std::milli>(end - start).count();
+        duration_custom_16UC3 += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     cout << "AVG SIMD 16UC1 time: " << duration_simd_16UC1 / test_times << "ms" << endl;
     cout << "AVG Custom 16UC1 time: " << duration_custom_16UC1 / test_times << "ms" << endl;
@@ -567,41 +613,49 @@ void simd_test()
         createTestImage(testImg_32FC1, size, CV_32FC1, i);
         testImg_32FC1_res_simd = cv::Mat::zeros(new_size, testImg_32FC1.type());
 
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         simd::resize_AVX2(testImg_32FC1, testImg_32FC1_res_simd, new_size, cv::INTER_NEAREST);
-        TIME_END("SIMD");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("SIMD");
 
-        duration_simd_32FC1+= std::chrono::duration<double, std::milli>(end - start).count();
+        duration_simd_32FC1+= std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_32FC1, size, CV_32FC1, i);
         testImg_32FC1_res_custom = cv::Mat::zeros(new_size, testImg_32FC1.type());
 
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_32FC1, testImg_32FC1_res_custom, new_size, cv::INTER_NEAREST);
-        TIME_END("Custom");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Custom");
 
-        duration_custom_32FC1 += std::chrono::duration<double, std::milli>(end - start).count();
+        duration_custom_32FC1 += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_32FC3, size, CV_32FC3, i);
         testImg_32FC3_res_simd = cv::Mat::zeros(new_size, testImg_32FC3.type());
 
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         simd::resize_AVX2(testImg_32FC3, testImg_32FC3_res_simd, new_size, cv::INTER_NEAREST);
-        TIME_END("SIMD");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("SIMD");
 
-        duration_simd_32FC3+= std::chrono::duration<double, std::milli>(end - start).count();
+        duration_simd_32FC3+= std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
     for (int i = 0; i < test_times; i++){
         createTestImage(testImg_32FC3, size, CV_32FC3, i);
         testImg_32FC3_res_custom = cv::Mat::zeros(new_size, testImg_32FC3.type());
 
-        TIME_START;
+        // TIME_START;
+        auto start_time = std::chrono::high_resolution_clock::now();
         resize_custom(testImg_32FC3, testImg_32FC3_res_custom, new_size, cv::INTER_NEAREST);
-        TIME_END("Custom");
+        auto end_time = std::chrono::high_resolution_clock::now();
+        // TIME_END("Custom");
 
-        duration_custom_32FC3 += std::chrono::duration<double, std::milli>(end - start).count();
+        duration_custom_32FC3 += std::chrono::duration<double, std::milli>(end_time - start_time).count();
     }
 
     cout << "AVG SIMD 32FC1 time: " << duration_simd_32FC1 / test_times << "ms" << endl;
