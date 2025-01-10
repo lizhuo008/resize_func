@@ -95,6 +95,25 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
 - **Purpose**:  
   Resizes an image using nearest-neighbor interpolation.
 
+#### `resizeNN_naive`
+
+```cpp
+void resizeNN_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify);
+```
+
+- **Purpose**:  
+  A simple implementation of the Nearest Neighbor interpolation for image resizing, processed sequentially without parallelism.
+
+#### `resizeBilinearInvoker_custom`
+
+```cpp
+class resizeBilinearInvoker_custom : public cv::ParallelLoopBody
+```
+
+- **Purpose**:  
+  This class facilitates parallelized bilinear interpolation for image resizing. It divides the computation across multiple threads using OpenCV's `cv::parallel_for_`. The bilinear interpolation calculates the weighted average of the four nearest neighbors in the input image to determine the pixel value in the output image.
+
+
 #### `resizeBilinear_custom`
 
 ```cpp
@@ -103,6 +122,16 @@ void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size
 
 - **Purpose**:  
   Resizes an image using bilinear interpolation.
+
+#### `resizeBilinear_naive`
+
+```cpp
+void resizeBilinear_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify);
+```
+
+- **Purpose**:  
+  This function implements a naive bilinear interpolation for resizing images. It calculates the weighted average of the four nearest neighbors for each output pixel, mapping them from the input image based on scaling factors. The function processes rows and columns sequentially without parallelization.
+
 
 #### `resize_custom`
 
@@ -159,24 +188,34 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
 
 ---
 
+### Implementation: `resizeBilinearInvoker_custom`
+
+```cpp
+void resizeBilinearInvoker_custom<T>::operator()(const cv::Range& range) const
+
+```
+
+- **Purpose**: This function implements the core logic for bilinear interpolation as part of the parallelized processing framework. It calculates the weighted average of four neighboring pixels for a specific range of rows in the output image, allowing efficient multi-threaded resizing.
+
+---
+
 ### Implementation: `resizeBilinear_custom`
 
 ```cpp
-void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify){}
+void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_size, const cv::Size& out_size, double ifx, double ify)
 ```
 
-- **Purpose**: Customed resize function with Bilinear Interpolation.
+- **Purpose**: This function performs bilinear interpolation for resizing images using parallel processing. It determines the interpolation weights and offsets for all columns and delegates the row-wise computation to the `resizeBilinearInvoker_custom` class, enabling efficient multi-threaded execution.
 
 ---
 
 ### Implementation: `resize_naive`
 
 ```cpp
-void resize_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation){}
-
+void resize_naive(const cv::Mat& input, cv::Mat& output, const cv::Size& new_size, int interpolation)
 ```
 
-- **Purpose**: Customed resize function with Nearest Neighbor Interpolation, not using parallel computing for comparison.
+- **Purpose**: This function serves as a general interface for image resizing using naive interpolation methods. It supports both nearest-neighbor and bilinear interpolation
 
 ---
 
@@ -363,13 +402,7 @@ void multithread_test(int interpolation = cv::INTER_NEAREST);
 
 - **Purpose**: Compares single-threaded and parallel computing resizing performance.
 
-#### `standard_comp_test`
-
-```cpp
-void standard_comp_test(int interpolation = cv::INTER_NEAREST);
-```
-
-- **Purpose**: Benchmarks custom resizing against OpenCV's native resizing functions.
+![Multithread test result](test_result_sample/Figure_1.png)
 
 #### `simd_test`
 
@@ -378,6 +411,21 @@ void simd_test();
 ```
 
 - **Purpose**: Benchmarks SIMD-based resizing against other implementations for performance evaluation.
+
+![SIMD test result](test_result_sample/Figure_2.png)
+
+#### `standard_comp_test`
+
+```cpp
+void standard_comp_test(int interpolation = cv::INTER_NEAREST);
+```
+
+- **Purpose**: Benchmarks custom resizing against OpenCV's native resizing functions.
+
+![OpenCV comparison test result 1](test_result_sample/Figure_3_d0.png)
+![OpenCV comparison test result 2](test_result_sample/Figure_3_d2.png)
+![OpenCV comparison test result 3](test_result_sample/Figure_3_d16.png)
+![OpenCV comparison test result 4](test_result_sample/Figure_3_d18.png)
 
 ---
 
