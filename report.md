@@ -448,6 +448,19 @@ void standard_comp_test(int interpolation = cv::INTER_NEAREST);
 
 ### Test Result and Analysis
 
+- **Experiment Environment Information**:
+  - **CPU Model**: Intel(R) Core(TM) Ultra 5 125H
+  - **Base Frequency**: 1.20 GHz
+  - **Max Frequency**: 3.61 GHz
+  - **Cores/Threads**: 14 cores / 18 threads
+  - **L1 Cache**: 1.4 MB
+  - **L2 Cache**: 14.0 MB
+  - **L3 Cache**: 18.0 MB
+  - **Hyper-Threading**: Enabled
+  - **Virtualization**: Enabled
+  - **CPU Utilization**: 100% during the experiment
+
+
 #### `multithread_test`
 
 - **Result**:
