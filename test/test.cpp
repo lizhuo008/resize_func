@@ -51,14 +51,28 @@ void multi_type_test(int interpolation)
 
     cout << "8UC1 test..." << endl;
     CVT_3C21C(testImg_8UC1);
-    resize_custom(testImg_8UC1, testImg_8UC1_res, new_size, interpolation);
+    if (interpolation == cv::INTER_NEAREST)
+    {
+        simd::resize_AVX2(testImg_8UC1, testImg_8UC1_res, new_size, cv::INTER_NEAREST);
+    }
+    else
+    {
+        resize_custom(testImg_8UC1, testImg_8UC1_res, new_size, cv::INTER_LINEAR);
+    }
     cv::imshow("8UC1 Image", testImg_8UC1_res);
 
     cv::waitKey(0);
     cv::destroyAllWindows();
 
     cout << "8UC3 test..." << endl;
-    resize_custom(testImg_8UC3, testImg_8UC3_res, new_size, interpolation);
+    if (interpolation == cv::INTER_NEAREST)
+    {
+        simd::resize_AVX2(testImg_8UC3, testImg_8UC3_res, new_size, cv::INTER_NEAREST);
+    }
+    else
+    {
+        resize_custom(testImg_8UC3, testImg_8UC3_res, new_size, cv::INTER_LINEAR);
+    }
     cv::imshow("8UC3 Image", testImg_8UC3_res);
 
     cv::waitKey(0);
@@ -67,7 +81,14 @@ void multi_type_test(int interpolation)
     cout << "16UC1 test..." << endl;
     CVT_3C21C(testImg_16UC1);
     CVT_8U216U(testImg_16UC1);
-    resize_custom(testImg_16UC1, testImg_16UC1_res, new_size, interpolation);
+    if (interpolation == cv::INTER_NEAREST)
+    {
+        simd::resize_AVX2(testImg_16UC1, testImg_16UC1_res, new_size, cv::INTER_NEAREST);
+    }
+    else
+    {
+        resize_custom(testImg_16UC1, testImg_16UC1_res, new_size, cv::INTER_LINEAR);
+    }
     CVT_16U28U(testImg_16UC1_res);
     cv::imshow("16UC1 Image", testImg_16UC1_res);
 
@@ -76,7 +97,14 @@ void multi_type_test(int interpolation)
 
     cout << "16UC3 test..." << endl;
     CVT_8U216U(testImg_16UC3);
-    resize_custom(testImg_16UC3, testImg_16UC3_res, new_size, interpolation);
+    if (interpolation == cv::INTER_NEAREST)
+    {
+        simd::resize_AVX2(testImg_16UC3, testImg_16UC3_res, new_size, cv::INTER_NEAREST);
+    }
+    else
+    {
+        resize_custom(testImg_16UC3, testImg_16UC3_res, new_size, cv::INTER_LINEAR);
+    }
     CVT_16U28U(testImg_16UC3_res);
     cv::imshow("16UC3 Image", testImg_16UC3_res);
 
@@ -86,7 +114,14 @@ void multi_type_test(int interpolation)
     cout << "32FC1 test..." << endl;
     CVT_3C21C(testImg_32FC1);
     CVT_8U232F(testImg_32FC1);
-    resize_custom(testImg_32FC1, testImg_32FC1_res, new_size, interpolation);
+    if (interpolation == cv::INTER_NEAREST)
+    {
+        simd::resize_AVX2(testImg_32FC1, testImg_32FC1_res, new_size, cv::INTER_NEAREST);
+    }
+    else
+    {
+        resize_custom(testImg_32FC1, testImg_32FC1_res, new_size, cv::INTER_LINEAR);
+    }
     CVT_32F28U(testImg_32FC1_res);
     cv::imshow("32FC1 Image", testImg_32FC1_res);
 
@@ -95,7 +130,14 @@ void multi_type_test(int interpolation)
 
     cout << "32FC3 test..." << endl;
     CVT_8U232F(testImg_32FC3);
-    resize_custom(testImg_32FC3, testImg_32FC3_res, new_size, interpolation);
+    if (interpolation == cv::INTER_NEAREST)
+    {
+        simd::resize_AVX2(testImg_32FC3, testImg_32FC3_res, new_size, cv::INTER_NEAREST);
+    }
+    else
+    {
+        resize_custom(testImg_32FC3, testImg_32FC3_res, new_size, cv::INTER_LINEAR);
+    }
     CVT_32F28U(testImg_32FC3_res);
     cv::imshow("32FC3 Image", testImg_32FC3_res);
 
@@ -123,7 +165,14 @@ void amp_shr_test(int interpolation)
     cin >> wid;
 
     cv::Size new_size(len, wid);
-    resize_custom(testImg, testImg_res, new_size, interpolation);
+    if (interpolation == cv::INTER_NEAREST)
+    {
+        simd::resize_AVX2(testImg, testImg_res, new_size, cv::INTER_NEAREST);
+    }
+    else
+    {
+        resize_custom(testImg, testImg_res, new_size, cv::INTER_LINEAR);
+    }
 
     cv::imshow("Resized Image", testImg_res);
 
@@ -352,13 +401,11 @@ void measure_accuracy(const cv::Size& input_size, const cv::Size& new_size, int 
         cv::resize(input, output_openCV, new_size, cv::INTER_LINEAR);
     }
 
-    double max_diff = 0;
-    double max_diff_percentage = 0;
     double diff = cv::norm(output_custom, output_openCV, cv::NORM_L2);
     double diff_percentage = diff / cv::norm(output_custom, cv::NORM_L2) * 100;
-    
-    cout << "Max Diff: " << max_diff << endl;
-    cout << "Max Diff Percentage: " << max_diff_percentage << "%" << endl;
+
+    cout << "Diff: " << diff << endl;
+    cout << "Diff Percentage: " << diff_percentage << "%" << endl;
 
 }
 
