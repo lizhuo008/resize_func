@@ -591,3 +591,8 @@ All data types are tested, but only partial results are shown here.
 
   - **Analysis for Bilinear Interpolation**: OpenCV remains the faster and more efficient choice for bilinear interpolation across all test cases, with differences consistently ranging from 26.7% to 34.7% faster. Without SIMD optimization, the performance of Custom Resize is much worse than OpenCV's native resizing function.
 
+#### **Limitations and Further Optimization**
+
+- Lack of strict memory alignment
+- Limited utilization of registers
+- Better adaptability to large and small cores
