@@ -8,7 +8,8 @@
 
 ---
 ## Introduction
-This document provides a comprehensive overview of the components of the image resizing library. 
+This document provides a comprehensive overview of the components of the image resizing library, including the design of the project, the main features and the implementation of the library. **The experiment result is displayed in last section.**
+
 
 This project realizes the image resizing function based on OpenCV. We develop the library with the following goals:
 
@@ -372,18 +373,7 @@ void createTestImage(cv::Mat& img, const cv::Size& size, int type = CV_8UC3, int
 
     switch (type)
     {
-        case CV_8UC1:
-        case CV_8UC3:
-            rng.fill(img, cv::RNG::UNIFORM, 0, 255);
-            break;
-        case CV_16UC1:
-        case CV_16UC3:
-            rng.fill(img, cv::RNG::UNIFORM, 0, 65535);
-            break;
-        case CV_32FC1:
-        case CV_32FC3:
-            rng.fill(img, cv::RNG::UNIFORM, 0.0f, 1.0f);
-            break;
+        // ...
     }
 }
 ```
@@ -471,6 +461,20 @@ void standard_comp_test(int interpolation = cv::INTER_NEAREST);
   - **Virtualization**: Enabled
   - **CPU Utilization**: 100% during the experiment
 
+**All test are passed in the `test.cpp` file. We display the visual result in the following sections.**
+
+### `amp_shr_test`
+
+This test is to test the performance of the amplification and shrinking of the image in any ratio and different data types.
+
+- **Result**:
+
+<p align="center">
+  <img src="test_result_sample/ampshr.png" alt="Amplification and Shrinking Test Result" width="80%">
+</p>
+
+- **Analysis**: Any ratio of the width and height is supported for both **Nearest Neighbor Interpolation** and **Bilinear Interpolation** to amplify or shrink the image.
+
 
 ### `multithread_test`
 
@@ -478,10 +482,11 @@ Both **Nearest Neighbor Interpolation** and **Bilinear Interpolation** are teste
 
 - **Result**:
 
-<p align="center">
-  <img src="test_result_sample/Figure_1_1.png" alt="Multithread Test Result using Nearest Neighbor Interpolation" width="45%">
-  <img src="test_result_sample/Figure_1_2.png" alt="Multithread Test Result using Bilinear Interpolation" width="45%">
+<p style="text-align: center;">
+  <img src="test_result_sample/Figure_1_1.png" alt="NN Interpolation" style="width: 40%; display: inline-block;">
+  <img src="test_result_sample/Figure_1_2.png" alt="BL Interpolation" style="width: 40%; display: inline-block;">
 </p>
+
 
 - **Analysis**: Parallelization has a significant impact on improving resize performance, especially for larger and higher precision images. The benefits of multithreading become more evident when dealing with formats such as 16UC1, 16UC3, 32FC1, and 32FC3, where the Naive Resize method performs considerably slower. While bilinear interpolation inherently requires more time than nearest neighbor, the parallel approach substantially mitigates this.
 
@@ -492,7 +497,7 @@ Similar to the `multithread_test`, we randomly create 200 images with same size 
 - **Result**:
 
 <p align="center">
-  <img src="test_result_sample/Figure_2.png" alt="SIMD Test Result" width="80%">
+  <img src="test_result_sample/Figure_2.png" alt="SIMD Test Result" width="50%">
 </p>
 
 
@@ -500,7 +505,7 @@ Similar to the `multithread_test`, we randomly create 200 images with same size 
 
 ### `standard_comp_test`
 
-Both **Nearest Neighbor Interpolation** and **Bilinear Interpolation** are compared with OpenCV's native resizing functions. For detail, we randomly create 200 images with same size and same data type, and then resize them, and get the average time of the resize operation. And we use L2 norm and human eye to evaluate the accuracy of the resize operation. **SIMD**  is supported for **Nearest Neighbor Interpolation** only.
+Both **Nearest Neighbor Interpolation** and **Bilinear Interpolation** are compared with **OpenCV's** native resizing functions. For detail, we randomly create 200 images with same size and same data type, and then resize them, and get the average time of the resize operation. And we use L2 norm and human eye to evaluate the accuracy of the resize operation. **SIMD**  is supported for **Nearest Neighbor Interpolation** only.
 
 All data types are tested, but only partial results are shown here.
 
@@ -518,38 +523,49 @@ All data types are tested, but only partial results are shown here.
   <img src="test_result_sample/cv_BL512.png" alt="Data type 16" width="40%">
 </p> -->
 
+<style>
+  table {
+    page-break-inside: avoid; 
+  }
+  tr {
+    page-break-inside: avoid; 
+    page-break-after: auto; 
+  }
+</style>
+
 <div style="display: flex; justify-content: center;">
-<table border="1" style="border-collapse: collapse; text-align: center; width: 90%;">
+<table style="border-collapse: collapse; text-align: center; width: 65%; font-family: Arial, sans-serif;">
   <!-- 表头 -->
   <tr>
-    <th></th> <!-- 空单元格 -->
-    <th>NN Interpolation</th>
-    <th>BL Interpolation</th>
+    <th style="width: 10%;"></th> <!-- 空单元格 -->
+    <th style="padding: 10px; font-size: 16px; font-weight: bold; color: #333;">NN Interpolation</th>
+    <th style="padding: 10px; font-size: 16px; font-weight: bold; color: #333;">BL Interpolation</th>
   </tr>
 
   <!-- 第一行 -->
   <tr>
-    <th>Custom</th>
-    <td>
-      <img src="test_result_sample/NN512.png" alt="Custom NN" width="90%">
+    <th style="writing-mode: vertical-rl; text-align: center; font-size: 14px; color: #666;">Custom</th>
+    <td style="padding: 10px;">
+      <img src="test_result_sample/NN512.png" alt="Custom NN" style="width: 90%; border-radius: 8px;">
     </td>
-    <td>
-      <img src="test_result_sample/BL512.png" alt="Custom BL" width="90%">
+    <td style="padding: 10px;">
+      <img src="test_result_sample/BL512.png" alt="Custom BL" style="width: 90%; border-radius: 8px;">
     </td>
   </tr>
 
   <!-- 第二行 -->
   <tr>
-    <th>OpenCV</th>
-    <td>
-      <img src="test_result_sample/cv_NN512.png" alt="OpenCV NN" width="90%">
+    <th style="writing-mode: vertical-rl; text-align: center; font-size: 14px; color: #666;">OpenCV</th>
+    <td style="padding: 10px;">
+      <img src="test_result_sample/cv_NN512.png" alt="OpenCV NN" style="width: 90%; border-radius: 8px;">
     </td>
-    <td>
-      <img src="test_result_sample/cv_BL512.png" alt="OpenCV BL" width="90%">
+    <td style="padding: 10px;">
+      <img src="test_result_sample/cv_BL512.png" alt="OpenCV BL" style="width: 90%; border-radius: 8px;">
     </td>
   </tr>
 </table>
 </div>
+
 
 
 
@@ -558,18 +574,17 @@ All data types are tested, but only partial results are shown here.
 #### **Efficiency**:
 
 - **Result**:
-<p align="center">
-  <img src="test_result_sample/Figure_3_d0NN.png" alt="Data type 0" width="45%">
-  <img src="test_result_sample/Figure_3_d0BL.png" alt="Data type 16" width="45%">
+<p style="text-align: center;">
+  <img src="test_result_sample/Figure_3_d0NN.png" alt="Data type 0" style="width: 40%; display: inline-block;">
+  <img src="test_result_sample/Figure_3_d0BL.png" alt="Data type 16" style="width: 40%; display: inline-block;">
 </p>
-
-<p align="center">
-  <img src="test_result_sample/Figure_3_d16NN.png" alt="Data type 16" width="45%">
-  <img src="test_result_sample/Figure_3_d16BL.png" alt="Data type 16" width="45%">
+<p style="text-align: center;">
+  <img src="test_result_sample/Figure_3_d16NN.png" alt="Data type 16" style="width: 40%; display: inline-block;">
+  <img src="test_result_sample/Figure_3_d16BL.png" alt="Data type 16" style="width: 40%; display: inline-block;">
 </p>
-<p align="center">
-  <img src="test_result_sample/Figure_3_d18NN.png" alt="Data type 18" width="45%">
-  <img src="test_result_sample/Figure_3_d18BL.png" alt="Data type 18" width="45%">
+<p style="text-align: center;">
+  <img src="test_result_sample/Figure_3_d18NN.png" alt="Data type 18" style="width: 40%; display: inline-block;">
+  <img src="test_result_sample/Figure_3_d18BL.png" alt="Data type 18" style="width: 40%; display: inline-block;">
 </p>
 
   - **Analysis for Nearest Neighbor Interpolation**: Custom Resize is almost as fast as OpenCV's native resizing function. Only few enhancements are needed to make it faster Although the relative performance is worse than OpenCV's native resizing function, several ms is negligible for most of the applications.
