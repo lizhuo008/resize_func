@@ -170,8 +170,10 @@ void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& 
     if (x_ofs == nullptr)
         throw std::runtime_error("Failed to allocate memory for x_ofs");
     int channels = input.channels();
-    for(int x = 0; x < out_size.width; x += 8)
-    {
+    int safe_bound = out_size.width - out_size.width % 8;
+    safe_bound = safe_bound >= 0 ? safe_bound : 0;
+    for(int x = 0; x < safe_bound; x += 8)
+    {   
         __m256i indices = _mm256_setr_epi32(x, x+1, x+2, x+3, x+4, x+5, x+6, x+7);
         __m256 scaled = _mm256_mul_ps(_mm256_cvtepi32_ps(indices), _mm256_set1_ps(ifx));
         __m256i sx = _mm256_cvtps_epi32(scaled);
@@ -183,8 +185,8 @@ void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& 
         
         _mm256_store_si256((__m256i*)(x_ofs + x), sx);
     }
-    for(int x = (out_size.width - out_size.width % 8); x < out_size.width; x++)
-    {
+    for(int x = safe_bound; x < out_size.width; x++)
+    {   
         int sx = floor(x * ifx);
         x_ofs[x] = min(sx, inp_size.width - 1) * channels;
     }
