@@ -38,7 +38,7 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
                 0x0, 0x4, 0x8, 0xC, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
                 const __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x4, -1, -1, -1, -1, -1, -1);\
                 safe_width = (width - width % 8) - 24;
-                
+                safe_width = safe_width >= 0 ? safe_width : 0;
                 for (int x = 0; x < safe_width; x += 8)
                 {
                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
@@ -55,7 +55,7 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
                 0x0, 0x1, 0x2, 0x4, 0x5, 0x6, 0x8, 0x9, 0xA, 0xC, 0xD, 0xE, -1, -1, -1, -1);
                 __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x2, 0x4, 0x5, 0x6, -1, -1); 
                 safe_width = (width - width % 8) - 8;
-
+                safe_width = safe_width >= 0 ? safe_width : 0;
                 for (int x = 0; x < safe_width; x += 8)
                 {
                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
@@ -72,6 +72,7 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
                 0x0, 0x1, 0x4, 0x5, 0x8, 0x9, 0xC, 0xD, -1, -1, -1, -1, -1, -1, -1, -1);
                 const __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x4, 0x5, -1, -1, -1, -1);
                 safe_width = (width - width % 8) - 8;
+                safe_width = safe_width >= 0 ? safe_width : 0;
 
                 for (int x = 0; x < safe_width; x += 8)
                 {
@@ -89,6 +90,7 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
                 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, -1, -1, -1, -1);
                 __m256i PERMUTE_MASK = _mm256_setr_epi32(0x0, 0x1, 0x2, 0x4, 0x5, 0x6, -1, -1); 
                 safe_width = (width - width % 4) - 4;
+                safe_width = safe_width >= 0 ? safe_width : 0;
                 __m128i all_ones = _mm_set1_epi32(0xFFFFFFFF); 
 
                 for (int x = 0; x < safe_width; x += 4)
@@ -103,7 +105,7 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
             case CV_32FC1:
             {   
                 safe_width = (width - width % 8);
-                
+                safe_width = safe_width >= 0 ? safe_width : 0;
                 for (int x = 0; x < safe_width; x += 8)
                 {
                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
@@ -126,6 +128,8 @@ void simd::resizeNNInvoker_AVX2<T>::operator()(const cv::Range& range) const
                 // }
 
                 safe_width = (width * channels - (width * channels) % 8);
+                safe_width = safe_width >= 0 ? safe_width : 0;
+                
                 for (int x = 0; x < safe_width; x += 8)
                 {
                     __m256i idx = _mm256_loadu_si256((__m256i*)(x_ofs + x));
@@ -182,7 +186,7 @@ void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& 
     for(int x = (out_size.width - out_size.width % 8); x < out_size.width; x++)
     {
         int sx = floor(x * ifx);
-        x_ofs[x] = min(sx, inp_size.width - 1);
+        x_ofs[x] = min(sx, inp_size.width - 1) * channels;
     }
 
     int* x_ofs_32F;
@@ -224,15 +228,15 @@ void simd::resizeNN_AVX2(const cv::Mat& input, cv::Mat& output, const cv::Size& 
     {
         case CV_8UC1:
         case CV_8UC3:
-            cv::parallel_for_(range, resizeNNInvoker_AVX2<uint8_t>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, resizeNNInvoker_AVX2<uint8_t>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         case CV_16UC1:
         case CV_16UC3:
-            cv::parallel_for_(range, resizeNNInvoker_AVX2<uint16_t>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, resizeNNInvoker_AVX2<uint16_t>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         case CV_32FC1:
         case CV_32FC3:
-            cv::parallel_for_(range, resizeNNInvoker_AVX2<float>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, resizeNNInvoker_AVX2<float>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         default:
             throw std::runtime_error("Unsupported image type");

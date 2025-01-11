@@ -159,10 +159,18 @@ void amp_shr_test(int interpolation)
 
     int len, wid;
 
-    cout << "Input new lengh(default 1000): ";
+    cout << "Input new lengh(default 1024): ";
     cin >> len;
-    cout << "Input new width(default 1000): ";
+    if (len <= 0)
+    {
+        len = 1024;
+    }
+    cout << "Input new width(default 1024): ";
     cin >> wid;
+    if (wid <= 0)
+    {
+        wid = 1024;
+    }
 
     cv::Size new_size(len, wid);
     if (interpolation == cv::INTER_NEAREST)

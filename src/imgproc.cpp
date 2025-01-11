@@ -57,7 +57,7 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
     for(int x = (out_size.width - out_size.width % 8); x < out_size.width; x++)
     {
         int sx = floor(x * ifx);
-        x_ofs[x] = min(sx, inp_size.width - 1);
+        x_ofs[x] = min(sx, inp_size.width - 1) * channels;
     }
 
     int* x_ofs_32F;
@@ -80,15 +80,15 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
     {
         case CV_8UC1:
         case CV_8UC3:
-            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<uint8_t>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<uint8_t>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         case CV_16UC1:
         case CV_16UC3:
-            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<uint16_t>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<uint16_t>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         case CV_32FC1:
         case CV_32FC3:
-            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<float>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, simd::resizeNNInvoker_AVX2<float>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         default:
             throw std::runtime_error("Unsupported image type");
@@ -112,15 +112,15 @@ void resizeNN_custom(const cv::Mat& input, cv::Mat& output, const cv::Size& inp_
     {
         case CV_8UC1:
         case CV_8UC3:
-            cv::parallel_for_(range, resizeNNInvoker_custom<uchar>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, resizeNNInvoker_custom<uchar>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         case CV_16UC1:
         case CV_16UC3:
-            cv::parallel_for_(range, resizeNNInvoker_custom<uint16_t>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, resizeNNInvoker_custom<uint16_t>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         case CV_32FC1:
         case CV_32FC3:
-            cv::parallel_for_(range, resizeNNInvoker_custom<float>(input, output, inp_size, out_size, x_ofs, ify));
+            cv::parallel_for_(range, resizeNNInvoker_custom<float>(input, output, inp_size, out_size, x_ofs, ify), output.total()/(double)(1<<16));
             break;
         default:
             throw std::runtime_error("Unsupported image type");
@@ -194,15 +194,15 @@ void resizeBilinear_custom(const cv::Mat& input, cv::Mat& output, const cv::Size
     {
         case CV_8UC1:
         case CV_8UC3:
-            cv::parallel_for_(range, resizeBilinearInvoker_custom<uchar>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify));
+            cv::parallel_for_(range, resizeBilinearInvoker_custom<uchar>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify), output.total()/(double)(1<<16));
             break;
         case CV_16UC1:
         case CV_16UC3:
-            cv::parallel_for_(range, resizeBilinearInvoker_custom<uint16_t>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify));
+            cv::parallel_for_(range, resizeBilinearInvoker_custom<uint16_t>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify), output.total()/(double)(1<<16));
             break;  
         case CV_32FC1:
         case CV_32FC3:
-            cv::parallel_for_(range, resizeBilinearInvoker_custom<float>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify));
+            cv::parallel_for_(range, resizeBilinearInvoker_custom<float>(input, output, inp_size, out_size, x1_ofs, x2_ofs, wx2, ify), output.total()/(double)(1<<16));
             break;
         default:
             throw std::runtime_error("Unsupported image type");
